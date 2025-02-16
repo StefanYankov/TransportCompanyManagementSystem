@@ -11,14 +11,13 @@ public class Bus extends TransportPeopleVehicle {
     public Bus() {
     }
 
-    public Bus(LocalDate issueDate,
-               String registrationPlate,
+    public Bus(String registrationPlate,
                String vinNumber,
                String model,
                String colour,
                int maxPassengerCapacity,
                int currentPassengerCapacity) {
-        super(issueDate, registrationPlate, vinNumber, model, colour, maxPassengerCapacity, currentPassengerCapacity);
+        super(registrationPlate, vinNumber, model, colour, maxPassengerCapacity, currentPassengerCapacity);
     }
 
     @Override

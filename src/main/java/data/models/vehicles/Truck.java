@@ -12,15 +12,14 @@ public class Truck extends TransportCargoVehicle {
     public Truck() {}
 
     // Parameterized constructor
-    public Truck(LocalDate issueDate,
-                 String registrationPlate,
+    public Truck(String registrationPlate,
                  String vinNumber,
                  String model,
                  String colour,
                  double maxCargoCapacityKg,
                  double currentCargoCapacityKg,
                  CargoType cargoType) {
-        super(issueDate, registrationPlate, vinNumber, model, colour, maxCargoCapacityKg, currentCargoCapacityKg, cargoType);
+        super(registrationPlate, vinNumber, model, colour, maxCargoCapacityKg, currentCargoCapacityKg, cargoType);
     }
 
     @Override

@@ -16,15 +16,14 @@ public abstract class TransportCargoVehicle extends Vehicle {
     public TransportCargoVehicle() {
     }
 
-    public TransportCargoVehicle(LocalDate issueDate,
-                                 String vehicleRegistrationPlate,
+    public TransportCargoVehicle(String vehicleRegistrationPlate,
                                  String vehicleVINNumber,
                                  String model,
                                  String colour,
                                  double maxCargoCapacityKg,
                                  double currentCargoCapacityKg,
                                  CargoType cargoType) {
-        super(issueDate, vehicleRegistrationPlate, vehicleVINNumber, model, colour);
+        super(vehicleRegistrationPlate, vehicleVINNumber, model, colour);
         this.maxCargoCapacityKg = maxCargoCapacityKg;
         this.currentCargoCapacityKg = currentCargoCapacityKg;
         this.cargoType = cargoType;

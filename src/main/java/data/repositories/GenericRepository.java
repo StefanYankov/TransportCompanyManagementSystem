@@ -1,12 +1,18 @@
 package data.repositories;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -20,9 +26,7 @@ import java.util.concurrent.ExecutorService;
  */
 public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
     private static final Logger logger = LoggerFactory.getLogger(GenericRepository.class);
-    // Hibernate SessionFactory for database interactions
     private final SessionFactory sessionFactory;
-    // ExecutorService for asynchronous operations
     private final ExecutorService executorService;
     private final Class<T> entityType;
 
@@ -50,14 +54,15 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
 
     /** {@inheritDoc} */
     @Override
-    public Optional<T> getById(TKey TKey) {
-        return executeQuery(session -> Optional.ofNullable(session.get(entityType, TKey)));
+    public Optional<T> getById(TKey id) {
+        return executeQuery(session -> Optional.ofNullable(session.get(entityType, id)));
     }
 
     /** {@inheritDoc} */
     @Override
     public List<T> getAll() {
-        return executeQuery(session -> session.createQuery("FROM " + entityType.getSimpleName(), entityType).list());
+        return executeQuery(session -> session
+                .createQuery("FROM " + entityType.getSimpleName(), entityType).list());
     }
 
     /** {@inheritDoc} */
@@ -90,8 +95,8 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
     }
 
     /** {@inheritDoc} */
-    public CompletableFuture<Optional<T>> getByIdAsync(TKey TKey) {
-        return CompletableFuture.supplyAsync(() -> getById(TKey), executorService);
+    public CompletableFuture<Optional<T>> getByIdAsync(TKey id) {
+        return CompletableFuture.supplyAsync(() -> getById(id), executorService);
     }
 
     /** {@inheritDoc} */
@@ -100,24 +105,63 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
         return CompletableFuture.supplyAsync(() -> getAll(), executorService);
     }
 
+    @Override
+    public List<T> findByCriteria(Map<String, Object> conditions) {
+        return executeQuery(session -> {
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<T> query = builder.createQuery(entityType);
+            Root<T> root = query.from(entityType);
+
+            List<Predicate> predicates = new ArrayList<>();
+            conditions.forEach((field, value) ->
+                    predicates.add(builder.equal(root.get(field), value))
+            );
+
+            query.select(root).where(predicates.toArray(new Predicate[0]));
+            return session.createQuery(query).getResultList();
+        });
+    }
+
+    @Override
+    public List<T> findAllSorted(String sortField, boolean ascending) {
+        return executeQuery(session -> {
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<T> query = builder.createQuery(entityType);
+            Root<T> root = query.from(entityType);
+
+            if (ascending) {
+                query.orderBy(builder.asc(root.get(sortField)));
+            } else {
+                query.orderBy(builder.desc(root.get(sortField)));
+            }
+
+            return session.createQuery(query).getResultList();
+        });
+    }
 
     /**
      * Executes a transactional operation.
      *
      * @param action The repository action to execute.
      */
-    private void executeTransaction(RepositoryAction<T> action) {
+    private void executeTransaction(RepositoryAction action) {
+        Session session = null;
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
+        try {
+            session = sessionFactory.openSession();
             transaction = session.beginTransaction();
             action.execute(session);
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             logger.error("Transaction failed", e);
-            throw new RuntimeException(e);
+            throw new RuntimeException("Transaction failed", e);
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 
@@ -129,21 +173,25 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
      * @return The result of the query.
      */
     private <R> R executeQuery(QueryAction<R> action) {
-        try (Session session = sessionFactory.openSession()) {
+        Session session = null;
+        try {
+            session = sessionFactory.openSession();
             return action.execute(session);
         } catch (Exception ex) {
             logger.error("Query execution failed", ex);
-            throw new RuntimeException(ex);
+            throw new RuntimeException("Query execution failed", ex);
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 
     /**
      * Functional interface for repository actions that modify the database.
-     *
-     * @param <T> Entity type.
      */
     @FunctionalInterface
-    interface RepositoryAction<T> {
+    interface RepositoryAction {
         void execute(Session session);
     }
 

@@ -15,14 +15,13 @@ public abstract class TransportPeopleVehicle extends Vehicle {
     public TransportPeopleVehicle() {
     }
 
-    public TransportPeopleVehicle(LocalDate issueDate,
-                                  String vehicleRegistrationPlate,
+    public TransportPeopleVehicle(String vehicleRegistrationPlate,
                                   String vehicleVINNumber,
                                   String model,
                                   String colour,
                                   int maxPassengerCapacity,
                                   int currentPassengerCapacity) {
-        super(issueDate, vehicleRegistrationPlate, vehicleVINNumber, model, colour);
+        super(vehicleRegistrationPlate, vehicleVINNumber, model, colour);
         this.maxPassengerCapacity = maxPassengerCapacity;
         this.currentPassengerCapacity = currentPassengerCapacity;
     }

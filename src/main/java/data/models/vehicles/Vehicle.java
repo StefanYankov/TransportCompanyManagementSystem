@@ -11,7 +11,6 @@ import java.util.Objects;
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Vehicle extends BaseModel<Long> {
 
-    private LocalDate issueDate;
     private String registrationPlate;
     private String vinNumber;
     private String model;
@@ -20,22 +19,14 @@ public abstract class Vehicle extends BaseModel<Long> {
     public Vehicle() {
     }
 
-    public Vehicle(LocalDate issueDate, String registrationPlate, String vinNumber, String model, String colour) {
-        this.issueDate = issueDate;
+    public Vehicle(String registrationPlate, String vinNumber, String model, String colour) {
         this.registrationPlate = registrationPlate;
         this.vinNumber = vinNumber;
         this.model = model;
         this.colour = colour;
     }
 
-    @Column(name = "issue_date", nullable = false)
-    public LocalDate getIssueDate() {
-        return issueDate;
-    }
 
-    public void setIssueDate(LocalDate issueDate) {
-        this.issueDate = issueDate;
-    }
 
     @Column(name = "registration_plate", nullable = false)
     public String getRegistrationPlate() {
@@ -90,7 +81,6 @@ public abstract class Vehicle extends BaseModel<Long> {
     public String toString() {
         return "Vehicle{" +
                 "id=" + getId() +
-                ", issueDate=" + issueDate +
                 ", vehicleRegistrationPlate='" + registrationPlate + '\'' +
                 ", vehicleVINNumber='" + vinNumber + '\'' +
                 ", model='" + model + '\'' +
