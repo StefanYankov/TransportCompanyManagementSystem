@@ -1,90 +1,81 @@
 package data.models.vehicles;
 
 import data.common.BaseModel;
+import data.models.TransportCompany;
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
-import java.util.Objects;
 
 @Entity
-@Table(name = "vehicles")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class Vehicle extends BaseModel<Long> {
+@Table(name = "vehicles")
+public abstract class Vehicle extends BaseModel {
 
     private String registrationPlate;
     private String vinNumber;
-    private String model;
-    private String colour;
-
-    public Vehicle() {
-    }
-
-    public Vehicle(String registrationPlate, String vinNumber, String model, String colour) {
-        this.registrationPlate = registrationPlate;
-        this.vinNumber = vinNumber;
-        this.model = model;
-        this.colour = colour;
-    }
+    private Made made;
+    private Model model;
+    private Colour colour;
+    private TransportCompany transportCompany;
 
 
+    public Vehicle() {}
 
-    @Column(name = "registration_plate", nullable = false)
+    @Column(name = "registration_plate", nullable = false, unique = true)
     public String getRegistrationPlate() {
         return registrationPlate;
     }
 
-    public void setRegistrationPlate(String vehicleRegistrationPlate) {
-        this.registrationPlate = vehicleRegistrationPlate;
+    public void setRegistrationPlate(String registrationPlate) {
+        this.registrationPlate = registrationPlate;
     }
 
-    @Column(name = "vin_number", unique = true, nullable = false)
+    @Column(name = "vin_number", nullable = false, unique = true)
     public String getVinNumber() {
         return vinNumber;
     }
 
-    public void setVinNumber(String vehicleVINNumber) {
-        this.vinNumber = vehicleVINNumber;
+    public void setVinNumber(String vinNumber) {
+        this.vinNumber = vinNumber;
     }
 
-    @Column(name = "model", nullable = false)
-    public String getModel() {
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "made_id", nullable = false)
+    public Made getMade() {
+        return made;
+    }
+
+    public void setMade(Made made) {
+        this.made = made;
+    }
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "model_id", nullable = false)
+    public Model getModel() {
         return model;
     }
 
-    public void setModel(String model) {
+    public void setModel(Model model) {
         this.model = model;
     }
 
-    @Column(name = "colour", nullable = false)
-    public String getColour() {
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "colour_id", nullable = false)
+    public Colour getColour() {
         return colour;
     }
 
-    public void setColour(String colour) {
+    public void setColour(Colour colour) {
         this.colour = colour;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Vehicle vehicle = (Vehicle) o;
-        return Objects.equals(getId(), vehicle.getId());
+    @ManyToOne
+    @JoinColumn(name = "transport_company_id")
+    public TransportCompany getTransportCompany() {
+        return transportCompany;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(getId());
+    public void setTransportCompany(TransportCompany transportCompany) {
+        this.transportCompany = transportCompany;
     }
 
-    @Override
-    public String toString() {
-        return "Vehicle{" +
-                "id=" + getId() +
-                ", vehicleRegistrationPlate='" + registrationPlate + '\'' +
-                ", vehicleVINNumber='" + vinNumber + '\'' +
-                ", model='" + model + '\'' +
-                ", colour='" + colour + '\'' +
-                '}';
-    }
 }

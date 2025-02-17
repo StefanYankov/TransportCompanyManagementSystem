@@ -2,22 +2,24 @@ package data.common;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @MappedSuperclass
-public abstract class BaseModel<TKey> implements IAuditInfo {
+public abstract class BaseModel implements IAuditInfo {
 
-    private TKey id;
+    private Long id; // Use Long instead of TKey
     private LocalDateTime createdOn;
     private LocalDateTime modifiedOn;
 
     // ID Getter and Setter with JPA Annotations
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public TKey getId() {
+    @Column(name = "id", nullable = false, unique = true)
+    public Long getId() {
         return id;
     }
 
-    public void setId(TKey id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

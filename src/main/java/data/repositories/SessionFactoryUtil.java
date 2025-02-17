@@ -1,7 +1,16 @@
 package data.repositories;
 
-import data.models.vehicles.Bus;
-import data.models.vehicles.Truck;
+import data.models.Client;
+import data.models.TransportCompany;
+import data.models.employee.Dispatcher;
+import data.models.employee.Driver;
+import data.models.employee.DriverQualification;
+import data.models.employee.Employee;
+import data.models.transportservices.Destination;
+import data.models.transportservices.TransportCargoService;
+import data.models.transportservices.TransportPassengersService;
+import data.models.transportservices.TransportService;
+import data.models.vehicles.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
@@ -23,8 +32,27 @@ public class SessionFactoryUtil {
                 Configuration configuration = new Configuration();
 
                 // Register annotated classes
-                configuration.addAnnotatedClass(Bus.class);
+                configuration.addAnnotatedClass(Employee.class);
+                configuration.addAnnotatedClass(Dispatcher.class);
+                configuration.addAnnotatedClass(DriverQualification.class);
+                configuration.addAnnotatedClass(Driver.class);
+
+                configuration.addAnnotatedClass(Destination.class);
+                configuration.addAnnotatedClass(TransportService.class);
+                configuration.addAnnotatedClass(TransportPassengersService.class);
+                configuration.addAnnotatedClass(TransportCargoService.class);
+
+                configuration.addAnnotatedClass(Colour.class);
+                configuration.addAnnotatedClass(Made.class);
+                configuration.addAnnotatedClass(Model.class);
+                configuration.addAnnotatedClass(TransportCargoVehicle.class);
+                configuration.addAnnotatedClass(TransportPeopleVehicle.class);
                 configuration.addAnnotatedClass(Truck.class);
+                configuration.addAnnotatedClass(Vehicle.class);
+
+                configuration.addAnnotatedClass(Client.class);
+                configuration.addAnnotatedClass(TransportCompany.class);
+
 
                 // Apply settings and build the ServiceRegistry
                 ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()

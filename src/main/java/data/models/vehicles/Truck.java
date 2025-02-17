@@ -1,29 +1,24 @@
 package data.models.vehicles;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-
-import java.time.LocalDate;
 
 @Entity
 @Table(name = "trucks")
 public class Truck extends TransportCargoVehicle {
-    // Default constructor (required by Hibernate)
+
+    private TruckType truckType;
     public Truck() {}
 
-    // Parameterized constructor
-    public Truck(String registrationPlate,
-                 String vinNumber,
-                 String model,
-                 String colour,
-                 double maxCargoCapacityKg,
-                 double currentCargoCapacityKg,
-                 CargoType cargoType) {
-        super(registrationPlate, vinNumber, model, colour, maxCargoCapacityKg, currentCargoCapacityKg, cargoType);
+    // Getter and Setter for truckType
+    @Column(name = "truck_type", nullable = false)
+    public TruckType getTruckType() {
+        return truckType;
     }
 
-    @Override
-    public String toString() {
-        return "Truck{} " + super.toString();
+    public void setTruckType(TruckType truckType) {
+        this.truckType = truckType;
     }
 }
+

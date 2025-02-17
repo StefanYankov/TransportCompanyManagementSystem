@@ -1,19 +1,18 @@
 package data.models.vehicles;
 
-import data.common.BaseDeletableModel;
+import data.common.BaseModel;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "vehicle_colour")
-public class VehicleColour extends BaseDeletableModel<Long> {
+@Table(name = "models")
+public class Model extends BaseModel {
     private String name;
 
-    public VehicleColour() {
-
+    public Model() {
     }
 
-    public VehicleColour(String name) {
+    public Model(String name) {
         this.name = name;
     }
 
@@ -24,4 +23,5 @@ public class VehicleColour extends BaseDeletableModel<Long> {
     public void setName(String name) {
         this.name = name;
     }
+
 }

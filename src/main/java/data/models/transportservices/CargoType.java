@@ -1,4 +1,4 @@
-package data.models.vehicles;
+package data.models.transportservices;
 
 public enum CargoType {
     REGULAR,

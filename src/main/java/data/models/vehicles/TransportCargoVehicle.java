@@ -1,9 +1,8 @@
 package data.models.vehicles;
 
+import data.models.transportservices.CargoType;
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
-import java.util.Objects;
 
 @Entity
 @Table(name = "transport_cargo_vehicles")
@@ -14,19 +13,6 @@ public abstract class TransportCargoVehicle extends Vehicle {
     private CargoType cargoType;
 
     public TransportCargoVehicle() {
-    }
-
-    public TransportCargoVehicle(String vehicleRegistrationPlate,
-                                 String vehicleVINNumber,
-                                 String model,
-                                 String colour,
-                                 double maxCargoCapacityKg,
-                                 double currentCargoCapacityKg,
-                                 CargoType cargoType) {
-        super(vehicleRegistrationPlate, vehicleVINNumber, model, colour);
-        this.maxCargoCapacityKg = maxCargoCapacityKg;
-        this.currentCargoCapacityKg = currentCargoCapacityKg;
-        this.cargoType = cargoType;
     }
 
     @Column(name = "max_cargo_capacity_kg", nullable = false)
@@ -55,19 +41,5 @@ public abstract class TransportCargoVehicle extends Vehicle {
 
     public void setCargoType(CargoType cargoType) {
         this.cargoType = cargoType;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), maxCargoCapacityKg, currentCargoCapacityKg, cargoType);
-    }
-
-    @Override
-    public String toString() {
-        return "TransportCargoVehicle{" +
-                "maxCargoCapacityKg=" + maxCargoCapacityKg +
-                ", currentCargoCapacityKg=" + currentCargoCapacityKg +
-                ", cargoType=" + cargoType +
-                "} " + super.toString();
     }
 }
