@@ -15,7 +15,7 @@ public class Destination extends BaseModel {
     public Destination() {
     }
 
-    @Column(name = "starting_location", nullable = false, length = ModelValidation.ADDRESS_LENGTH)
+    @Column(name = "starting_location", nullable = false, length = ModelValidation.MAX_ADDRESS_LENGTH)
     public String getStartingLocation() {
         return startingLocation;
     }
@@ -24,7 +24,7 @@ public class Destination extends BaseModel {
         this.startingLocation = startingLocation;
     }
 
-    @Column(name = "ending_location", nullable = false, length = ModelValidation.ADDRESS_LENGTH)
+    @Column(name = "ending_location", nullable = false, length = ModelValidation.MAX_ADDRESS_LENGTH)
     public String getEndingLocation() {
         return endingLocation;
     }

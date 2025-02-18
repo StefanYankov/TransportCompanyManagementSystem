@@ -3,14 +3,17 @@ package data.models.employee;
 import data.common.BaseModel;
 import jakarta.persistence.*;
 
-@Entity
-@Table(name = "driver_qualifications")
-public class DriverQualification extends BaseModel {
+import java.util.HashSet;
+import java.util.Set;
 
+@Entity
+@Table(name = "qualifications")
+public class Qualification extends BaseModel {
     private String name;
     private String description;
+    private Set<Driver> drivers = new HashSet<>();
 
-    public DriverQualification() {
+    public Qualification() {
     }
 
     @Column(name = "qualification_name", nullable = false, unique = true)
@@ -31,4 +34,14 @@ public class DriverQualification extends BaseModel {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    @ManyToMany(mappedBy = "driverQualifications") // This is the other side of the relation
+    public Set<Driver> getDrivers() {
+        return drivers;
+    }
+
+    public void setDrivers(Set<Driver> drivers) {
+        this.drivers = drivers;
+    }
+
 }

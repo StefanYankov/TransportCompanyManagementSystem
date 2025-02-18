@@ -18,7 +18,7 @@ public class Colour extends BaseModel {
         this.name = name;
     }
 
-    @Column(unique = true, nullable = false, length = ModelValidation.NAME_LENGTH)
+    @Column(unique = true, nullable = false, length = ModelValidation.MAX_NAME_LENGTH)
     public String getName() {
         return name;
     }

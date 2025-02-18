@@ -11,14 +11,12 @@ import jakarta.persistence.*;
 public abstract class Vehicle extends BaseModel {
 
     private String registrationPlate;
-    private String vinNumber;
-    private Made made;
-    private Model model;
     private Colour colour;
     private TransportCompany transportCompany;
 
 
-    public Vehicle() {}
+    public Vehicle() {
+    }
 
     @Column(name = "registration_plate", nullable = false, unique = true)
     public String getRegistrationPlate() {
@@ -27,35 +25,6 @@ public abstract class Vehicle extends BaseModel {
 
     public void setRegistrationPlate(String registrationPlate) {
         this.registrationPlate = registrationPlate;
-    }
-
-    @Column(name = "vin_number", nullable = false, unique = true)
-    public String getVinNumber() {
-        return vinNumber;
-    }
-
-    public void setVinNumber(String vinNumber) {
-        this.vinNumber = vinNumber;
-    }
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "made_id", nullable = false)
-    public Made getMade() {
-        return made;
-    }
-
-    public void setMade(Made made) {
-        this.made = made;
-    }
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "model_id", nullable = false)
-    public Model getModel() {
-        return model;
-    }
-
-    public void setModel(Model model) {
-        this.model = model;
     }
 
     @ManyToOne(optional = false)

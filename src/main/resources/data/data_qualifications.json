@@ -1,0 +1,42 @@
+[
+  {
+    "name": "A1",
+    "description": "Light motorcycle up to 125cc and power up to 11 kW"
+  },
+  {
+    "name": "A2",
+    "description": "Motorcycles with a power up to 35 kW"
+  },
+  {
+    "name": "A",
+    "description": "Motorcycles with no power restriction"
+  },
+  {
+    "name": "B",
+    "description": "Light vehicles (up to 3.5 tons)"
+  },
+  {
+    "name": "C",
+    "description": "Heavy trucks (over 3.5 tons)"
+  },
+  {
+    "name": "D",
+    "description": "Buses (more than 9 passengers)"
+  },
+  {
+    "name": "E",
+    "description": "Vehicles with attached trailer or caravan"
+  },
+  {
+    "name": "C1",
+    "description": "Light cargo vehicle (3.5 to 7.5 tons)"
+  },
+  {
+    "name": "D1",
+    "description": "Small bus (up to 16 passengers)"
+  },
+  {
+    "name": "T",
+    "description": "Tractors and self-propelled machines"
+  }
+]

@@ -11,13 +11,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "tranposrt_companies")
+@Table(name = "transport_companies")
 public class TransportCompany extends BaseModel {
 
     private String name;
-    private Set<Employee> employees= new HashSet<>();
-    private Set<Vehicle> vehicles= new HashSet<>();
-    private Set<TransportService> transportServices= new HashSet<>();
+    private String address;
+    private Set<Employee> employees = new HashSet<>();
+    private Set<Vehicle> vehicles = new HashSet<>();
+    private Set<TransportService> transportServices = new HashSet<>();
 
     public TransportCompany() {
     }
@@ -27,13 +28,22 @@ public class TransportCompany extends BaseModel {
         this.name = name;
     }
 
-    @Column(name = "transport_company_name", nullable = false, length = ModelValidation.NAME_LENGTH)
+    @Column(name = "transport_company_name", nullable = false, length = ModelValidation.MAX_NAME_LENGTH, unique = true)
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Column(nullable = false, length = ModelValidation.MAX_NAME_LENGTH)
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     // One-to-many relationship with Employee

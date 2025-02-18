@@ -3,9 +3,14 @@ package data.models;
 import data.common.BaseModel;
 import data.common.ModelValidation;
 import data.common.annotations.ValidEmail;
+import data.models.transportservices.TransportService;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "clients")
@@ -14,11 +19,12 @@ public class Client extends BaseModel {
     private String name;
     private String telephone;
     private String email;
+    private Set<TransportService> transportService = new HashSet<>();
 
     public Client() {
     }
 
-    @Column(nullable = false, length = ModelValidation.NAME_LENGTH)
+    @Column(nullable = false, length = ModelValidation.MAX_NAME_LENGTH)
     public String getName() {
         return name;
     }
@@ -36,7 +42,7 @@ public class Client extends BaseModel {
         this.telephone = telephone;
     }
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     @ValidEmail(message = ModelValidation.INVALID_EMAIL_MESSAGE)
     public String getEmail() {
         return email;
@@ -44,5 +50,14 @@ public class Client extends BaseModel {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    @OneToMany()
+    public Set<TransportService> getTransportService() {
+        return transportService;
+    }
+
+    public void setTransportService(Set<TransportService> transportService) {
+        this.transportService = transportService;
     }
 }

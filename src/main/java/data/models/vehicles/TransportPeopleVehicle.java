@@ -4,11 +4,9 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "transport_people_vehicles")
-public class TransportPeopleVehicle extends Vehicle {
+public abstract class TransportPeopleVehicle extends Vehicle {
 
     private int maxPassengerCapacity;
-    private int currentPassengerCapacity;
-
     public TransportPeopleVehicle() {
     }
 
@@ -21,12 +19,5 @@ public class TransportPeopleVehicle extends Vehicle {
         this.maxPassengerCapacity = maxPassengerCapacity;
     }
 
-    @Column(name = "current_passenger_capacity", nullable = false)
-    public int getCurrentPassengerCapacity() {
-        return currentPassengerCapacity;
-    }
 
-    public void setCurrentPassengerCapacity(int currentPassengerCapacity) {
-        this.currentPassengerCapacity = currentPassengerCapacity;
-    }
 }

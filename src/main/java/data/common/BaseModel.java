@@ -23,7 +23,6 @@ public abstract class BaseModel implements IAuditInfo {
         this.id = id;
     }
 
-    // CreatedOn Getter and Setter with JPA Annotations
     @Column(name = "created_on", nullable = false, updatable = false)
     @Override
     public LocalDateTime getCreatedOn() {
@@ -35,7 +34,6 @@ public abstract class BaseModel implements IAuditInfo {
         this.createdOn = createdOn;
     }
 
-    // ModifiedOn Getter and Setter with JPA Annotations
     @Column(name = "modified_on")
     @Override
     public LocalDateTime getModifiedOn() {
@@ -47,7 +45,6 @@ public abstract class BaseModel implements IAuditInfo {
         this.modifiedOn = modifiedOn;
     }
 
-    // Lifecycle Callbacks to Auto-Set Timestamps
     @PrePersist
     public void onPrePersist() {
         this.createdOn = LocalDateTime.now();

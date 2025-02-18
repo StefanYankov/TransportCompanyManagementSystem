@@ -20,7 +20,7 @@ public abstract class Employee extends BaseModel {
     public Employee() {
     }
 
-    @Column(name = "first_name", nullable = false, length = ModelValidation.NAME_LENGTH)
+    @Column(name = "first_name", nullable = false, length = ModelValidation.MAX_NAME_LENGTH)
     public String getFirstName() {
         return firstName;
     }
@@ -39,7 +39,7 @@ public abstract class Employee extends BaseModel {
         this.salary = salary;
     }
 
-    @Column(name = "family_name", nullable = false, length = ModelValidation.NAME_LENGTH)
+    @Column(name = "family_name", nullable = false, length = ModelValidation.MAX_NAME_LENGTH)
     public String getFamilyName() {
         return familyName;
     }

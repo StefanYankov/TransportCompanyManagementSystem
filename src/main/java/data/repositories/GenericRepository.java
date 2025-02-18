@@ -79,7 +79,18 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
 
     /** {@inheritDoc} */
     public CompletableFuture<Void> addAsync(T entity) {
-        return CompletableFuture.runAsync(() -> add(entity), executorService);
+      return CompletableFuture.runAsync(() -> {
+          try(Session session = sessionFactory.openSession()) {
+              Transaction transaction = session.beginTransaction();
+              session.persist(entity);
+              transaction.commit();
+          } catch (Exception e) {
+              logger.error("Error saving entity asynchronously", e);
+              throw e;
+          }
+      });
+
+      //  return CompletableFuture.runAsync(() -> add(entity), executorService);
     }
 
     /** {@inheritDoc} */
@@ -105,23 +116,54 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
         return CompletableFuture.supplyAsync(() -> getAll(), executorService);
     }
 
-    @Override
-    public List<T> findByCriteria(Map<String, Object> conditions) {
-        return executeQuery(session -> {
+    /** {@inheritDoc} */
+//    @Override
+//    public List<T> findByCriteria(Map<String, Object> conditions) {
+//        return executeQuery(session -> {
+//            CriteriaBuilder builder = session.getCriteriaBuilder();
+//            CriteriaQuery<T> query = builder.createQuery(entityType);
+//            Root<T> root = query.from(entityType);
+//
+//            List<Predicate> predicates = new ArrayList<>();
+//            conditions.forEach((field, value) ->
+//                    predicates.add(builder.equal(root.get(field), value))
+//            );
+//
+//            query.select(root).where(predicates.toArray(new Predicate[0]));
+//            return session.createQuery(query).getResultList();
+//        });
+//    }
+
+    public List<T> findByCriteria(Map<String, Object> conditions, String orderBy, boolean ascending) {
+        try (Session session = sessionFactory.openSession()) {
             CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<T> query = builder.createQuery(entityType);
-            Root<T> root = query.from(entityType);
+            CriteriaQuery<T> criteriaQuery = builder.createQuery(entityType);
+            Root<T> root = criteriaQuery.from(entityType);
 
             List<Predicate> predicates = new ArrayList<>();
-            conditions.forEach((field, value) ->
-                    predicates.add(builder.equal(root.get(field), value))
-            );
+            conditions.forEach((field, value) -> predicates.add(builder.equal(root.get(field), value)));
 
-            query.select(root).where(predicates.toArray(new Predicate[0]));
-            return session.createQuery(query).getResultList();
-        });
+            // Apply sorting
+            if (ascending) {
+                criteriaQuery.orderBy(builder.asc(root.get(orderBy)));
+            } else {
+                criteriaQuery.orderBy(builder.desc(root.get(orderBy)));
+            }
+
+            criteriaQuery.select(root).where(predicates.toArray(new Predicate[0]));
+
+            return session.createQuery(criteriaQuery).getResultList();
+        }
     }
 
+
+    /** {@inheritDoc} */
+    @Override
+    public CompletableFuture<List<T>> findByCriteriaAsync(Map<String, Object> conditions, String orderBy, boolean ascending) {
+                return CompletableFuture.supplyAsync(() -> findByCriteria(conditions, orderBy, ascending), executorService);
+    }
+
+    /** {@inheritDoc} */
     @Override
     public List<T> findAllSorted(String sortField, boolean ascending) {
         return executeQuery(session -> {
@@ -137,6 +179,12 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
 
             return session.createQuery(query).getResultList();
         });
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CompletableFuture<List<T>> findAllSortedAsync(String sortField, boolean ascending) {
+        return CompletableFuture.supplyAsync(() -> findAllSorted(sortField, ascending), executorService);
     }
 
     /**
@@ -157,7 +205,7 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
                 transaction.rollback();
             }
             logger.error("Transaction failed", e);
-            throw new RuntimeException("Transaction failed", e);
+            throw e;
         } finally {
             if (session != null && session.isOpen()) {
                 session.close();

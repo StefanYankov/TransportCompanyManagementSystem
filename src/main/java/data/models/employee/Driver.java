@@ -1,5 +1,6 @@
 package data.models.employee;
 
+import data.models.transportservices.TransportService;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -9,10 +10,11 @@ import java.util.Set;
 @Table(name = "drivers")
 public class Driver extends Employee {
 
-    private Set<DriverQualification> driverQualifications = new HashSet<>();
-
     private Dispatcher dispatcher;
+    private Set<Qualification> driverQualifications = new HashSet<>();
+    private Set<TransportService> transportServices = new HashSet<>();
 
+    // TODO: ManyToMany transport service
     @ManyToOne
     @JoinColumn(name = "dispatcher_id", nullable = true)
     public Dispatcher getDispatcher() {
@@ -23,17 +25,26 @@ public class Driver extends Employee {
         this.dispatcher = dispatcher;
     }
 
-    @ManyToMany()
+    @ManyToMany
     @JoinTable(
-            name = "driver_qualification_mapping",
+            name = "driver_qualification",
             joinColumns = @JoinColumn(name = "driver_id"),
             inverseJoinColumns = @JoinColumn(name = "qualification_id")
     )
-    public Set<DriverQualification> getDriverQualifications() {
+    public Set<Qualification> getDriverQualifications() {
         return driverQualifications;
     }
 
-    public void setDriverQualifications(Set<DriverQualification> driverQualification) {
-        this.driverQualifications = driverQualification;
+    public void setDriverQualifications(Set<Qualification> driverQualifications) {
+        this.driverQualifications = driverQualifications;
+    }
+
+    @OneToMany(mappedBy = "driver")
+    public Set<TransportService> getTransportServices() {
+        return transportServices;
+    }
+
+    public void setTransportServices(Set<TransportService> transportServices) {
+        this.transportServices = transportServices;
     }
 }

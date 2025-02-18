@@ -14,12 +14,11 @@ dependencies {
     implementation("org.hibernate:hibernate-core:6.6.7.Final")
     implementation("mysql:mysql-connector-java:8.0.33")
     implementation("org.hibernate:hibernate-validator:8.0.0.Final")
-
-
+    implementation("org.modelmapper:modelmapper:3.2.2")
+    implementation("com.google.code.gson:gson:2.12.1")
     implementation("org.glassfish:jakarta.el:4.0.1")
     // SLF4J API (Facade)
     implementation("org.slf4j:slf4j-api:1.7.32")
-
     // Logback (SLF4J Implementation)
     implementation("ch.qos.logback:logback-classic:1.4.11")
 

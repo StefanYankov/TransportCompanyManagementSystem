@@ -125,4 +125,6 @@ public abstract class TransportService extends BaseModel {
     public void setPaid(boolean paid) {
         isPaid = paid;
     }
+
+
 }
