@@ -1,43 +1,49 @@
-package services.data.dto;
+package services.data.dto.employees;
 
 import data.common.ModelValidation;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.hibernate.validator.constraints.Length;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
-public abstract class CreateEmployeeInputModel {
+
+public class EmployeeUpdateDto {
+
+    private long id;
 
     @NotBlank(message = ModelValidation.FIRST_NAME_IS_REQUIRED)
-    @Length(min = ModelValidation.MIN_NAME_LENGTH, max = ModelValidation.MAX_NAME_LENGTH)
+    @Size(min = ModelValidation.MIN_NAME_LENGTH, max = ModelValidation.MAX_NAME_LENGTH)
     private String firstName;
 
     @NotBlank(message = ModelValidation.LAST_NAME_IS_REQUIRED)
-    @Length(min = ModelValidation.MIN_NAME_LENGTH, max = ModelValidation.MAX_NAME_LENGTH)
+    @Size(min = ModelValidation.MIN_NAME_LENGTH, max = ModelValidation.MAX_NAME_LENGTH)
     private String familyName;
 
     @NotNull(message = ModelValidation.SALARY_IS_REQUIRED)
-    @DecimalMin(value = ModelValidation.MINIMUM_ALLOWED_SALARY, inclusive = false, message = ModelValidation.SALARY_CANNOT_BE_A_NEGATIVE_VALUE)
+    @DecimalMin(value = ModelValidation.MINIMUM_ALLOWED_SALARY, message = ModelValidation.SALARY_CANNOT_BE_A_NEGATIVE_VALUE)
     private BigDecimal salary;
 
-    @NotNull(message = ModelValidation.TRANSPORT_COMPANY_IS_REQUIRED)
-    private long transportCompany;
+    private Long transportCompanyId;
 
-    public CreateEmployeeInputModel() {
+    public EmployeeUpdateDto() {
     }
 
-    public CreateEmployeeInputModel(
-            String firstName,
-            String familyName,
-            BigDecimal salary,
-            long transportCompany
-    ) {
+    public EmployeeUpdateDto(long id, String firstName, String familyName, BigDecimal salary, Long transportCompanyId) {
+        this.id = id;
         this.firstName = firstName;
         this.familyName = familyName;
         this.salary = salary;
-        this.transportCompany = transportCompany;
+        this.transportCompanyId = transportCompanyId;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getFirstName() {
@@ -48,7 +54,6 @@ public abstract class CreateEmployeeInputModel {
         this.firstName = firstName;
     }
 
-    @Length(min = 1, max = ModelValidation.MAX_NAME_LENGTH)
     public String getFamilyName() {
         return familyName;
     }
@@ -65,11 +70,11 @@ public abstract class CreateEmployeeInputModel {
         this.salary = salary;
     }
 
-    public long getTransportCompany() {
-        return transportCompany;
+    public Long getTransportCompanyId() {
+        return transportCompanyId;
     }
 
-    public void setTransportCompany(long transportCompany) {
-        this.transportCompany = transportCompany;
+    public void setTransportCompanyId(Long transportCompanyId) {
+        this.transportCompanyId = transportCompanyId;
     }
 }

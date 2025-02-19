@@ -18,6 +18,4 @@ public abstract class TransportPeopleVehicle extends Vehicle {
     public void setMaxPassengerCapacity(int maxPassengerCapacity) {
         this.maxPassengerCapacity = maxPassengerCapacity;
     }
-
-
 }

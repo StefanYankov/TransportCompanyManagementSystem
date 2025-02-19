@@ -14,7 +14,6 @@ public class Driver extends Employee {
     private Set<Qualification> driverQualifications = new HashSet<>();
     private Set<TransportService> transportServices = new HashSet<>();
 
-    // TODO: ManyToMany transport service
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dispatcher_id", nullable = true)
     public Dispatcher getDispatcher() {

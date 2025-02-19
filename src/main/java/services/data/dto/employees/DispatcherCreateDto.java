@@ -1,18 +1,21 @@
-package services.data.dto;
+package services.data.dto.employees;
 
 import java.math.BigDecimal;
 import java.util.Set;
 
-public class CreateDispatcherInputModel extends CreateEmployeeInputModel {
+
+public class DispatcherCreateDto extends EmployeeCreateDto {
 
     private Set<Long> supervisedDriverIds;
 
-    // Constructor
-    public CreateDispatcherInputModel() {}
+    public DispatcherCreateDto() {
+    }
 
-    public CreateDispatcherInputModel(String firstName, String familyName,
-                                      BigDecimal salary, Long transportCompanyId,
-                                      Set<Long> supervisedDriverIds) {
+    public DispatcherCreateDto(Set<Long> supervisedDriverIds) {
+        this.supervisedDriverIds = supervisedDriverIds;
+    }
+
+    public DispatcherCreateDto(String firstName, String familyName, BigDecimal salary, Long transportCompanyId, Set<Long> supervisedDriverIds) {
         super(firstName, familyName, salary, transportCompanyId);
         this.supervisedDriverIds = supervisedDriverIds;
     }
@@ -24,5 +27,4 @@ public class CreateDispatcherInputModel extends CreateEmployeeInputModel {
     public void setSupervisedDriverIds(Set<Long> supervisedDriverIds) {
         this.supervisedDriverIds = supervisedDriverIds;
     }
-
 }

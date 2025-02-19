@@ -7,7 +7,7 @@ import data.common.seeding.LocalDateTimeAdapter;
 import data.models.TransportCompany;
 import data.models.employee.Qualification;
 import data.models.employee.Employee;
-import data.models.transportservices.TransportService;
+import data.models.transportservices.TransportCargoService;
 import data.models.vehicles.Colour;
 
 import data.models.vehicles.Vehicle;
@@ -21,15 +21,12 @@ import jakarta.validation.ValidatorFactory;
 import jakarta.validation.Validator;
 import org.hibernate.SessionFactory;
 import services.TransportCompanyService;
-import services.data.dto.CreateTransportCompanyInputModel;
+import services.data.dto.transportcompany.TransportCompanyCreateDto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -51,8 +48,8 @@ public class Main {
                 new GenericRepository<>(sessionFactory, executorService, Colour.class);
         IGenericRepository<Vehicle, Long> vehicleRepository =
                 new GenericRepository<>(sessionFactory, executorService, Vehicle.class);
-        IGenericRepository<TransportService, Long> transportServiceRepository
-                = new GenericRepository<>(sessionFactory, executorService, TransportService.class);
+        IGenericRepository<TransportCargoService, Long> cargoServiceRepository =
+                new GenericRepository<>(sessionFactory, executorService, TransportCargoService.class);
 
         // DATA SEEDING
 
@@ -96,42 +93,49 @@ public class Main {
         String address = scanner.nextLine();
 
 //        // Create a DTO with user input
-        CreateTransportCompanyInputModel inputModel = new CreateTransportCompanyInputModel(companyName, address);
+        TransportCompanyCreateDto inputModel = new TransportCompanyCreateDto(companyName, address);
 
         // Perform validation
-        Set<ConstraintViolation<CreateTransportCompanyInputModel>> violations = validator.validate(inputModel);
-        TransportCompanyService service = new TransportCompanyService(companyRepository, employeeRepository);
+        Set<ConstraintViolation<TransportCompanyCreateDto>> violations = validator.validate(inputModel);
+        TransportCompanyService service = new TransportCompanyService(companyRepository, cargoServiceRepository);
 
-        // Check if validation passed
-        if (!violations.isEmpty()) {
-            // If there are validation errors, print them
-            for (ConstraintViolation<CreateTransportCompanyInputModel> violation : violations) {
-                System.out.println("Error: " + violation.getMessage());
-            }
-        } else {
-            // If validation passes, pass the input to the service layer
-            service.CreateTransportCompany(inputModel);
-        }
-
-        try {
-            var company1 = service.getCompanyByIdAsync(1L).get();
-            System.out.println("-".repeat(12) + System.lineSeparator() + "Company 1: " + company1.getName() + System.lineSeparator() +
-                    company1.getAddress() + System.lineSeparator() + "-".repeat(12));
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            var company2 = service.getCompaniesByNameAsync("starter", "name", true).get().getFirst();
-            System.out.println("-".repeat(12) + System.lineSeparator() + "Company 1: " + company2.getName() + System.lineSeparator() +
-                    company2.getAddress() + System.lineSeparator() + "-".repeat(12));
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+//        // Check if validation passed
+//        if (!violations.isEmpty()) {
+//            // If there are validation errors, print them
+//            for (ConstraintViolation<TransportCompanyCreateDto> violation : violations) {
+//                System.out.println("Error: " + violation.getMessage());
+//            }
+//        } else {
+//            // If validation passes, pass the input to the service layer
+//            service.createTransportCompanyAsync(inputModel);
+//        }
+//
+//        Map<String, String> companies = new HashMap<>();
+//        companies.put("TSB", "Troyan");
+//        companies.put("SAP", "Sofia");
+//        companies.put("DXC", "Sofia");
+//        companies.put("IBM", "Lovech");
+//
+//        List<CompletableFuture<Void>> createCompanyFutures = new ArrayList<>();
+//
+//
+//        for (var company : companies.entrySet()) {
+//            inputModel.setCompanyName(company.getKey());
+//            inputModel.setAddress(company.getValue());
+//
+//            // Check if validation passed
+//            Set<ConstraintViolation<TransportCompanyCreateDto>> violations2 = validator.validate(inputModel);
+//            if (!violations.isEmpty()) {
+//                // If there are validation errors, print them
+//                for (ConstraintViolation<TransportCompanyCreateDto> violation : violations2) {
+//                    System.out.println("Error: " + violation.getMessage());
+//                }
+//            } else {
+//                // If validation passes, create the company asynchronously and collect the futures
+//                CompletableFuture<Void> createCompanyFuture = service.createTransportCompanyAsync(inputModel);
+//                createCompanyFutures.add(createCompanyFuture);
+//            }
+//        }
 
 
         scanner.close();

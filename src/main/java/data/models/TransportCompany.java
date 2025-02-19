@@ -14,11 +14,13 @@ import java.util.Set;
 @Table(name = "transport_companies")
 public class TransportCompany extends BaseModel {
 
+
     private String name;
     private String address;
     private Set<Employee> employees = new HashSet<>();
     private Set<Vehicle> vehicles = new HashSet<>();
     private Set<TransportService> transportServices = new HashSet<>();
+    private Set<Client> clients = new HashSet<>();
 
     public TransportCompany() {
     }
@@ -28,7 +30,7 @@ public class TransportCompany extends BaseModel {
         this.name = name;
     }
 
-    @Column(name = "transport_company_name", nullable = false, length = ModelValidation.MAX_NAME_LENGTH, unique = true)
+    @Column(name = "name", nullable = false, length = ModelValidation.MAX_NAME_LENGTH, unique = true)
     public String getName() {
         return name;
     }
@@ -74,5 +76,18 @@ public class TransportCompany extends BaseModel {
 
     public void setTransportServices(Set<TransportService> transportServices) {
         this.transportServices = transportServices;
+    }
+
+    @ManyToMany
+    @JoinTable(name = "companies_clients",
+            joinColumns = @JoinColumn(name = "company_id"),
+            inverseJoinColumns = @JoinColumn(name = "client_id")
+    )
+    public Set<Client> getClients() {
+        return clients;
+    }
+
+    public void setClients(Set<Client> clients) {
+        this.clients = clients;
     }
 }

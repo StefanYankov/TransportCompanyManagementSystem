@@ -4,10 +4,7 @@ import data.common.BaseModel;
 import data.common.ModelValidation;
 import data.common.annotations.ValidEmail;
 import data.models.transportservices.TransportService;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,6 +17,7 @@ public class Client extends BaseModel {
     private String telephone;
     private String email;
     private Set<TransportService> transportService = new HashSet<>();
+    private Set<Client> clients = new HashSet<>();
 
     public Client() {
     }
@@ -59,5 +57,14 @@ public class Client extends BaseModel {
 
     public void setTransportService(Set<TransportService> transportService) {
         this.transportService = transportService;
+    }
+
+    @ManyToMany
+    public Set<Client> getClients() {
+        return clients;
+    }
+
+    public void setClients(Set<Client> clients) {
+        this.clients = clients;
     }
 }

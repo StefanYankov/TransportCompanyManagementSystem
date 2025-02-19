@@ -1,62 +1,52 @@
 package services;
 
 import data.models.TransportCompany;
-import data.models.employee.Employee;
+import data.models.transportservices.TransportCargoService;
 import data.repositories.IGenericRepository;
-import services.data.dto.CreateTransportCompanyInputModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import services.data.dto.transportservices.TransportCargoServiceViewDto;
+import services.data.mapping.mappings.TransportCargoServiceMapper;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-
+import java.util.stream.Collectors;
 
 /**
  * Service class responsible for handling operations related to transport companies and their employees.
  * This class supports asynchronous operations.
  */
 public class TransportCompanyService {
-    private final IGenericRepository<Employee, Long> employeeRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(TransportCargoServiceService.class);
     private final IGenericRepository<TransportCompany, Long> companyRepository;
+    private final IGenericRepository<TransportCargoService, Long> cargoServiceRepository;
 
 
-    public TransportCompanyService(IGenericRepository<TransportCompany, Long> companyRepository,
-                                   IGenericRepository<Employee, Long> employeeRepository) {
+    public TransportCompanyService(
+            IGenericRepository<TransportCompany, Long> companyRepository,
+            IGenericRepository<TransportCargoService, Long> cargoServiceRepository
+    ) {
         this.companyRepository = companyRepository;
-        this.employeeRepository = employeeRepository;
+        this.cargoServiceRepository = cargoServiceRepository;
     }
 
-    public void CreateTransportCompany(CreateTransportCompanyInputModel inputModel) {
-        TransportCompany transportCompanyModel = new TransportCompany();
-        transportCompanyModel.setName(inputModel.getCompanyName());
-        transportCompanyModel.setAddress(inputModel.getAddress());
 
-        this.companyRepository.add(transportCompanyModel);
-    }
-
-    public CompletableFuture<Void> createTransportCompanyAsync(CreateTransportCompanyInputModel inputModel) {
-        TransportCompany transportCompanyModel = new TransportCompany();
-        transportCompanyModel.setName(inputModel.getCompanyName());
-        transportCompanyModel.setAddress(inputModel.getAddress());
-
-        return CompletableFuture.runAsync(() -> companyRepository.addAsync(transportCompanyModel));
-
-    }
-
-    /**
-     * Asynchronously retrieves a transport company by its ID.
-     *
-     * @param companyId The ID of the transport company to retrieve.
-     * @return A CompletableFuture containing the transport company, if found.
-     */
-    public CompletableFuture<TransportCompany> getCompanyByIdAsync(Long companyId) {
-        return companyRepository.getByIdAsync(companyId)
-                .thenApply(optionalCompany -> optionalCompany.orElseThrow(() -> new RuntimeException("Company not found")));
-    }
-
-    public CompletableFuture<List<TransportCompany>> getCompaniesByNameAsync(String companyName, String orderBy, boolean ascending) {
+    public CompletableFuture<List<TransportCargoServiceViewDto>> getAllCargoServicesBetweenDatesAsync(LocalDate startDate, LocalDate endDate, String sortBy, boolean ascending) {
         Map<String, Object> conditions = new HashMap<>();
-        conditions.put("name", companyName);
-        return companyRepository.findByCriteriaAsync(conditions, orderBy, true);
+        if (startDate != null) {
+            conditions.put("startingDate", startDate); // Assuming field name is "startingDate"
+        }
+        if (endDate != null) {
+            conditions.put("endingDate", endDate);   // Assuming field name is "endingDate"
+        }
+        return cargoServiceRepository.findByCriteriaAsync(conditions, sortBy, ascending)
+                .thenApply(transportCargoServices -> transportCargoServices.stream()
+                        .map(TransportCargoServiceMapper::toViewDto)
+                        .collect(Collectors.toList()));
     }
+
 }

@@ -14,7 +14,6 @@ public abstract class Vehicle extends BaseModel {
     private Colour colour;
     private TransportCompany transportCompany;
 
-
     public Vehicle() {
     }
 

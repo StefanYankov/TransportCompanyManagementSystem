@@ -7,11 +7,10 @@ import java.util.Objects;
 @MappedSuperclass
 public abstract class BaseModel implements IAuditInfo {
 
-    private Long id; // Use Long instead of TKey
+    private Long id;
     private LocalDateTime createdOn;
     private LocalDateTime modifiedOn;
 
-    // ID Getter and Setter with JPA Annotations
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, unique = true)

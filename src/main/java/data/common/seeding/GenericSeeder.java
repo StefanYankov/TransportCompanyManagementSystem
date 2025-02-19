@@ -2,14 +2,15 @@ package data.common.seeding;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import data.repositories.GenericRepository;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import data.repositories.IGenericRepository;
 import org.slf4j.Logger;
@@ -44,24 +45,54 @@ public class GenericSeeder<T, TKey> implements ISeeder<T, TKey> {
         this.gson = gson;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void seed() {
+
+        List<T> entities = repository.getAll(0, 10, new HashMap<>(), "name", true);
+
+        if (entities.isEmpty()) {
+            try{
+            List<T> newEntities = loadDataFromJson();
+
+            insertEntities(newEntities);
+            logger.info("{} seeded successfully.", entityType.getSimpleName());
+            } catch (IOException ex) {
+                logger.error("Failed to read data from JSON file", ex);
+                throw new RuntimeException("Error loading data from JSON", ex);
+            }
+        } else {
+            // Logging when the entities already exist
+            logger.info("{} already exists in the database. Skipping seeding.", entityType.getSimpleName());
+        }
+    }
+
 
     /**
      * {@inheritDoc}
      */
     @Override
     public CompletableFuture<Void> seedAsync() {
-        return CompletableFuture.supplyAsync(() -> repository.getAll())
+        return CompletableFuture.supplyAsync(() -> repository
+                        .getAllAsync(0, 10, new HashMap<>(), "name", true))
                 .thenCompose(entities -> {
-                    if (entities.isEmpty()) {
-                        return loadDataFromJson()
-                                .thenCompose(newEntities -> insertEntitiesAsync(newEntities));
-                    } else {
-                        // Logging when the entities already exist
-                        logger.info("{} already exists in the database. Skipping seeding.", entityType.getSimpleName());
-                        return CompletableFuture.completedFuture(null);
+                    try {
+                        if (entities.get().isEmpty()) {
+                            return loadDataFromJsonAsync()
+                                    .thenCompose(newEntities -> insertEntitiesAsync(newEntities));
+                        } else {
+                            // Logging when the entities already exist
+                            logger.info("{} already exists in the database. Skipping seeding.", entityType.getSimpleName());
+                            return CompletableFuture.completedFuture(null);
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
+                        throw new RuntimeException(e);
                     }
                 });
     }
+
+
 
     /**
      * Loads the data from the specified JSON file asynchronously.
@@ -69,7 +100,7 @@ public class GenericSeeder<T, TKey> implements ISeeder<T, TKey> {
      *
      * @return A CompletableFuture containing the list of entities loaded from the JSON file.
      */
-    private CompletableFuture<List<T>> loadDataFromJson() {
+    private CompletableFuture<List<T>> loadDataFromJsonAsync() {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 // Read the file content as a String
@@ -100,5 +131,32 @@ public class GenericSeeder<T, TKey> implements ISeeder<T, TKey> {
             // Logging after successful insertion
             logger.info("{} seeded successfully.", entityType.getSimpleName());
         });
+    }
+
+    /**
+     * Loads the data from the specified JSON file synchronously.
+     * This method parses the JSON file and maps it to a list of entity objects using Gson.
+     *
+     * @return A list of entities loaded from the JSON file.
+     * @throws IOException If reading the file fails.
+     */
+    private List<T> loadDataFromJson() throws IOException {
+        // Read the file content as a String
+        String jsonContent = new String(Files.readAllBytes(new File(jsonFilePath).toPath()));
+
+        // Use Gson to parse the JSON content into a list of entities
+        Type listType = TypeToken.getParameterized(List.class, entityType).getType();
+        return gson.fromJson(jsonContent, listType);
+    }
+
+    /**
+     * Inserts the loaded entities into the database synchronously.
+     *
+     * @param newEntities The entities to be inserted.
+     */
+    private void insertEntities(List<T> newEntities) {
+        for (T entity : newEntities) {
+            repository.add(entity);  // Assuming `add` is a synchronous method
+        }
     }
 }
