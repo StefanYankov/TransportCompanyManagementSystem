@@ -13,7 +13,8 @@ dependencies {
 
     implementation("org.hibernate:hibernate-core:6.6.7.Final")
     implementation("mysql:mysql-connector-java:8.0.33")
-    implementation("org.hibernate:hibernate-validator:8.0.0.Final")
+    implementation("org.hibernate:hibernate-validator:8.0.1.Final")
+    implementation("org.hibernate:hibernate-validator-annotation-processor:8.0.1.Final")
     implementation("org.modelmapper:modelmapper:3.2.2")
     implementation("com.google.code.gson:gson:2.12.1")
     implementation("org.glassfish:jakarta.el:4.0.1")

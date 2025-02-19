@@ -15,16 +15,19 @@ import data.repositories.GenericRepository;
 import data.repositories.IGenericRepository;
 import data.repositories.SessionFactoryUtil;
 
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
 import jakarta.validation.Validator;
 import org.hibernate.SessionFactory;
 import services.TransportCompanyService;
+import services.data.dto.CreateTransportCompanyInputModel;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -86,35 +89,44 @@ public class Main {
         Validator validator = factory.getValidator();
 
         Scanner scanner = new Scanner(System.in);
-//        System.out.print("Enter Company Name: ");
-//        String companyName = scanner.nextLine();
-//
-//        System.out.print("Enter Address: ");
-//        String address = scanner.nextLine();
-//
+        System.out.print("Enter Company Name: ");
+        String companyName = scanner.nextLine();
+
+        System.out.print("Enter Address: ");
+        String address = scanner.nextLine();
+
 //        // Create a DTO with user input
-//        CreateTransportCompanyInputModel inputModel = new CreateTransportCompanyInputModel(companyName, address);
-//
-//        // Perform validation
-//        Set<ConstraintViolation<CreateTransportCompanyInputModel>> violations = validator.validate(inputModel);
+        CreateTransportCompanyInputModel inputModel = new CreateTransportCompanyInputModel(companyName, address);
+
+        // Perform validation
+        Set<ConstraintViolation<CreateTransportCompanyInputModel>> violations = validator.validate(inputModel);
         TransportCompanyService service = new TransportCompanyService(companyRepository, employeeRepository);
-//
-//        // Check if validation passed
-//        if (!violations.isEmpty()) {
-//            // If there are validation errors, print them
-//            for (ConstraintViolation<CreateTransportCompanyInputModel> violation : violations) {
-//                System.out.println("Error: " + violation.getMessage());
-//            }
-//        } else {
-//            // If validation passes, pass the input to the service layer
-//            //service.CreateTransportCompany(inputModel); // TODO: FIX ASYNC
-//        }
+
+        // Check if validation passed
+        if (!violations.isEmpty()) {
+            // If there are validation errors, print them
+            for (ConstraintViolation<CreateTransportCompanyInputModel> violation : violations) {
+                System.out.println("Error: " + violation.getMessage());
+            }
+        } else {
+            // If validation passes, pass the input to the service layer
+            service.CreateTransportCompany(inputModel);
+        }
 
         try {
-            //var company1 = service.getCompanyByIdAsync(1L).get();
-            var company1 = service.getCompaniesByNameAsynch("starter", "name", true).get().getFirst();
+            var company1 = service.getCompanyByIdAsync(1L).get();
             System.out.println("-".repeat(12) + System.lineSeparator() + "Company 1: " + company1.getName() + System.lineSeparator() +
                     company1.getAddress() + System.lineSeparator() + "-".repeat(12));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            var company2 = service.getCompaniesByNameAsync("starter", "name", true).get().getFirst();
+            System.out.println("-".repeat(12) + System.lineSeparator() + "Company 1: " + company2.getName() + System.lineSeparator() +
+                    company2.getAddress() + System.lineSeparator() + "-".repeat(12));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (ExecutionException e) {

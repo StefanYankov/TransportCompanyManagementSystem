@@ -15,7 +15,7 @@ public class Driver extends Employee {
     private Set<TransportService> transportServices = new HashSet<>();
 
     // TODO: ManyToMany transport service
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dispatcher_id", nullable = true)
     public Dispatcher getDispatcher() {
         return dispatcher;
@@ -39,7 +39,7 @@ public class Driver extends Employee {
         this.driverQualifications = driverQualifications;
     }
 
-    @OneToMany(mappedBy = "driver")
+    @OneToMany(mappedBy = "driver", fetch = FetchType.LAZY)
     public Set<TransportService> getTransportServices() {
         return transportServices;
     }

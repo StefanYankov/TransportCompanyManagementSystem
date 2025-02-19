@@ -29,8 +29,8 @@ public abstract class Employee extends BaseModel {
         this.firstName = name;
     }
 
-    @Column(precision = ModelValidation.DECIMAL_PRECISION, scale = ModelValidation.DECIMAL_SCALE)
-    @NonNegativeBigDecimal(message = ModelValidation.SALARY_CANNOT_BE_A_NEGATIVE_VALUE)
+    @Column(nullable = false, precision = ModelValidation.DECIMAL_PRECISION, scale = ModelValidation.DECIMAL_SCALE)
+    @NonNegativeBigDecimal(message = ModelValidation.SALARY_CANNOT_BE_A_NEGATIVE_VALUE) // can use DecimalMin but just ofr the sake of creating a custom annotation
     public BigDecimal getSalary() {
         return salary;
     }
@@ -48,7 +48,7 @@ public abstract class Employee extends BaseModel {
         this.familyName = familyName;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transport_company_id", nullable = false)
     public TransportCompany getTransportCompany() {
         return transportCompany;

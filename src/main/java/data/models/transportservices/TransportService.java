@@ -33,7 +33,7 @@ public abstract class TransportService extends BaseModel {
     public TransportService() {
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id")
     public Driver getDriver() {
         return driver;
@@ -43,7 +43,7 @@ public abstract class TransportService extends BaseModel {
         this.driver = driver;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id")
     public Vehicle getVehicle() {
         return vehicle;
@@ -53,7 +53,7 @@ public abstract class TransportService extends BaseModel {
         this.vehicle = vehicle;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id")
     public Client getClient() {
         return client;
@@ -80,7 +80,7 @@ public abstract class TransportService extends BaseModel {
         this.endingDate = endingDate;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "destination_id")
     public Destination getDestination() {
         return destination;
@@ -90,7 +90,7 @@ public abstract class TransportService extends BaseModel {
         this.destination = destination;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transport_company_id", nullable = false)
     public TransportCompany getTransportCompany() {
         return transportCompany;
@@ -125,6 +125,4 @@ public abstract class TransportService extends BaseModel {
     public void setPaid(boolean paid) {
         isPaid = paid;
     }
-
-
 }

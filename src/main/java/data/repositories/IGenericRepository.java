@@ -29,6 +29,25 @@ public interface IGenericRepository<T, TKey> {
     public List<T> getAll();
 
     /**
+     * Retrieves all entities with pagination.
+     *
+     * @param page     The page number (0-based).
+     * @param pageSize The number of results per page.
+     * @return A paginated list of entities.
+     */
+    public List<T> getAll(int page, int pageSize);
+
+    /**
+     * Retrieves all entities with pagination and optional relation fetching.
+     *
+     * @param page          The page number (0-based).
+     * @param pageSize      The number of results per page.
+     * @param fetchRelations A boolean flag indicating whether to fetch related entities.
+     * @return A paginated list of entities.
+     */
+    public List<T> getAll(int page, int pageSize, boolean fetchRelations);
+
+    /**
      * Adds a new entity.
      *
      * @param entity the entity to save
@@ -52,15 +71,10 @@ public interface IGenericRepository<T, TKey> {
     /**
      * Finds entities that match the specified criteria.
      *
-     * This method executes a query with conditions provided in the form of a map, where keys are field names and values are the expected values for those fields.
-     * The results can be sorted by a specified field in either ascending or descending order.
-     *
-     * @param conditions A map of field names and their expected values for the WHERE clause.
-     *                  The map key represents the field name, and the value represents the expected value of that field.
-     * @param orderBy The field name to sort the results by.
-     * @param ascending A boolean flag indicating the sort order.
-     *                  If true, the results will be sorted in ascending order; otherwise, they will be sorted in descending order.
-     * @return A list of entities matching the criteria, ordered as specified
+     * @param conditions A map of field names and their expected values for filtering.
+     * @param orderBy    The field name to sort by.
+     * @param ascending  Whether the results should be sorted in ascending order.
+     * @return A list of entities matching the criteria, ordered as specified.
      */
     public List<T> findByCriteria(Map<String, Object> conditions, String orderBy, boolean ascending);
 
@@ -69,7 +83,7 @@ public interface IGenericRepository<T, TKey> {
      *
      * @param sortField The field to sort by.
      * @param ascending Whether to sort in ascending order.
-     * @return A list of entities sorted by the specified field.
+     * @return A list of sorted entities.
      */
     public List<T> findAllSorted(String sortField, boolean ascending);
 
@@ -87,6 +101,25 @@ public interface IGenericRepository<T, TKey> {
      * @return A CompletableFuture containing a list of all entities.
      */
     public CompletableFuture<List<T>> getAllAsync();
+
+    /**
+     * Asynchronously retrieves all entities with pagination.
+     *
+     * @param page     The page number (0-based).
+     * @param pageSize The number of results per page.
+     * @return A CompletableFuture containing a paginated list of entities.
+     */
+    public CompletableFuture<List<T>> getAllAsync(int page, int pageSize);
+
+    /**
+     * Asynchronously retrieves all entities with pagination and optional relation fetching.
+     *
+     * @param page          The page number (0-based).
+     * @param pageSize      The number of results per page.
+     * @param fetchRelations A boolean flag indicating whether to fetch related entities.
+     * @return A CompletableFuture containing a paginated list of entities.
+     */
+    public CompletableFuture<List<T>> getAllAsync(int page, int pageSize, boolean fetchRelations);
 
     /**
      * Asynchronously adds a new entity.
@@ -115,15 +148,10 @@ public interface IGenericRepository<T, TKey> {
     /**
      * Asynchronously finds entities that match the specified criteria.
      *
-     * This method executes a query with conditions provided in the form of a map, where keys are field names and values are the expected values for those fields.
-     * The results can be sorted by a specified field in either ascending or descending order, and the query will execute asynchronously.
-     *
-     * @param conditions A map of field names and their expected values for the WHERE clause.
-     *                  The map key represents the field name, and the value represents the expected value of that field.
-     * @param orderBy The field name to sort the results by.
-     * @param ascending A boolean flag indicating the sort order.
-     *                  If true, the results will be sorted in ascending order; otherwise, they will be sorted in descending order.
-     * @return A CompletableFuture containing a list of entities matching the criteria, ordered as specified.
+     * @param conditions A map of field names and their expected values for filtering.
+     * @param orderBy    The field name to sort by.
+     * @param ascending  Whether the results should be sorted in ascending order.
+     * @return A CompletableFuture containing a list of entities matching the criteria.
      */
     public CompletableFuture<List<T>> findByCriteriaAsync(Map<String, Object> conditions, String orderBy, boolean ascending);
 
@@ -132,7 +160,7 @@ public interface IGenericRepository<T, TKey> {
      *
      * @param sortField The field to sort by.
      * @param ascending Whether to sort in ascending order.
-     * @return A CompletableFuture containing a list of entities sorted by the specified field.
+     * @return A CompletableFuture containing a list of sorted entities.
      */
     public CompletableFuture<List<T>> findAllSortedAsync(String sortField, boolean ascending);
 }

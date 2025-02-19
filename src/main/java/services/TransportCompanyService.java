@@ -54,7 +54,7 @@ public class TransportCompanyService {
                 .thenApply(optionalCompany -> optionalCompany.orElseThrow(() -> new RuntimeException("Company not found")));
     }
 
-    public CompletableFuture<List<TransportCompany>> getCompaniesByNameAsynch(String companyName, String orderBy, boolean ascending) {
+    public CompletableFuture<List<TransportCompany>> getCompaniesByNameAsync(String companyName, String orderBy, boolean ascending) {
         Map<String, Object> conditions = new HashMap<>();
         conditions.put("name", companyName);
         return companyRepository.findByCriteriaAsync(conditions, orderBy, true);
