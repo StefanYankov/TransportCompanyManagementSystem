@@ -1,0 +1,29 @@
+package services.data.dto.transportservices;
+
+import data.common.ModelValidation;
+import jakarta.validation.constraints.Min;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+public class TransportPassengersServiceCreateDTO extends TransportServiceCreateDTO {
+
+    @Min(value = ModelValidation.MINIMUM_NUMBER_OF_PASSENGERS, message = ModelValidation.PASSENGERS_MUST_BE_GREATER_THAN)
+    private int numberOfPassengers;
+
+    public TransportPassengersServiceCreateDTO() {
+    }
+
+    public TransportPassengersServiceCreateDTO(Long clientId, Long destinationId, Long driverId, LocalDate endingDate, BigDecimal price, LocalDate startingDate, Long transportCompanyId, Long vehicleId, int numberOfPassengers) {
+        super(clientId, destinationId, driverId, endingDate, price, startingDate, transportCompanyId, vehicleId);
+        this.numberOfPassengers = numberOfPassengers;
+    }
+
+    public int getNumberOfPassengers() {
+        return numberOfPassengers;
+    }
+
+    public void setNumberOfPassengers(int numberOfPassengers) {
+        this.numberOfPassengers = numberOfPassengers;
+    }
+}

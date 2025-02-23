@@ -16,6 +16,11 @@ public class Qualification extends BaseModel {
     public Qualification() {
     }
 
+    public Qualification(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
     @Column(name = "qualification_name", nullable = false, unique = true)
     public String getName() {
         return name;
@@ -35,7 +40,7 @@ public class Qualification extends BaseModel {
         this.description = description;
     }
 
-    @ManyToMany(mappedBy = "driverQualifications") // This is the other side of the relation
+    @ManyToMany(mappedBy = "qualifications") // This is the other side of the relation
     public Set<Driver> getDrivers() {
         return drivers;
     }

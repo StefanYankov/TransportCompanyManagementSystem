@@ -10,6 +10,8 @@ public abstract class BaseModel implements IAuditInfo {
     private Long id;
     private LocalDateTime createdOn;
     private LocalDateTime modifiedOn;
+    @Version
+    private Long version;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,5 +54,13 @@ public abstract class BaseModel implements IAuditInfo {
     @PreUpdate
     public void onPreUpdate() {
         this.modifiedOn = LocalDateTime.now();
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

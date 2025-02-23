@@ -42,7 +42,6 @@ public class SessionFactoryUtil {
                 configuration.addAnnotatedClass(TransportPassengersService.class);
                 configuration.addAnnotatedClass(TransportCargoService.class);
 
-                configuration.addAnnotatedClass(Colour.class);
                 configuration.addAnnotatedClass(Vehicle.class);
                 configuration.addAnnotatedClass(TransportCargoVehicle.class);
                 configuration.addAnnotatedClass(TransportPeopleVehicle.class);

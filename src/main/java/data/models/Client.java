@@ -17,7 +17,6 @@ public class Client extends BaseModel {
     private String telephone;
     private String email;
     private Set<TransportService> transportService = new HashSet<>();
-    private Set<Client> clients = new HashSet<>();
 
     public Client() {
     }
@@ -59,12 +58,4 @@ public class Client extends BaseModel {
         this.transportService = transportService;
     }
 
-    @ManyToMany
-    public Set<Client> getClients() {
-        return clients;
-    }
-
-    public void setClients(Set<Client> clients) {
-        this.clients = clients;
-    }
 }

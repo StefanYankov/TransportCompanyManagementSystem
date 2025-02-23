@@ -1,11 +1,10 @@
 package data.models.vehicles;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "trucks")
+
 public class Truck extends TransportCargoVehicle {
 
     private TruckType truckType;
@@ -13,6 +12,7 @@ public class Truck extends TransportCargoVehicle {
 
     // Getter and Setter for truckType
     @Column(name = "truck_type", nullable = false)
+    @Enumerated(EnumType.STRING)
     public TruckType getTruckType() {
         return truckType;
     }

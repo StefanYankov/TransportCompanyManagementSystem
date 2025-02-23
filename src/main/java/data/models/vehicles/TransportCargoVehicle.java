@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "transport_cargo_vehicles")
 public abstract class TransportCargoVehicle extends Vehicle {
 

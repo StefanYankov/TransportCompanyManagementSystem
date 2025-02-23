@@ -11,7 +11,6 @@ import jakarta.persistence.*;
 public abstract class Vehicle extends BaseModel {
 
     private String registrationPlate;
-    private Colour colour;
     private TransportCompany transportCompany;
 
     public Vehicle() {
@@ -26,15 +25,6 @@ public abstract class Vehicle extends BaseModel {
         this.registrationPlate = registrationPlate;
     }
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "colour_id", nullable = false)
-    public Colour getColour() {
-        return colour;
-    }
-
-    public void setColour(Colour colour) {
-        this.colour = colour;
-    }
 
     @ManyToOne
     @JoinColumn(name = "transport_company_id")

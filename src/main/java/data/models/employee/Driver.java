@@ -11,7 +11,7 @@ import java.util.Set;
 public class Driver extends Employee {
 
     private Dispatcher dispatcher;
-    private Set<Qualification> driverQualifications = new HashSet<>();
+    private Set<Qualification> qualifications = new HashSet<>();
     private Set<TransportService> transportServices = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,12 +30,12 @@ public class Driver extends Employee {
             joinColumns = @JoinColumn(name = "driver_id"),
             inverseJoinColumns = @JoinColumn(name = "qualification_id")
     )
-    public Set<Qualification> getDriverQualifications() {
-        return driverQualifications;
+    public Set<Qualification> getQualifications() {
+        return qualifications;
     }
 
-    public void setDriverQualifications(Set<Qualification> driverQualifications) {
-        this.driverQualifications = driverQualifications;
+    public void setQualifications(Set<Qualification> driverQualifications) {
+        this.qualifications = driverQualifications;
     }
 
     @OneToMany(mappedBy = "driver", fetch = FetchType.LAZY)

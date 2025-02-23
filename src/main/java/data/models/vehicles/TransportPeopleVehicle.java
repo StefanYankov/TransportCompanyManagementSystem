@@ -3,6 +3,7 @@ package data.models.vehicles;
 import jakarta.persistence.*;
 
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "transport_people_vehicles")
 public abstract class TransportPeopleVehicle extends Vehicle {
 
