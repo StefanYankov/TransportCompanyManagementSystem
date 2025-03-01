@@ -3,11 +3,15 @@ package services.data.dto.clients;
 import data.common.ModelValidation;
 import data.common.annotations.ValidEmail;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class ClientUpdateDTO {
 
-    private long id;
+    private int version;
+
+    @NotNull(message = ModelValidation.ID_REQUIRED)
+    private Long id;
 
     @NotBlank(message = ModelValidation.CLIENT_NAME_NOT_BLANK)
     @Size(max = ModelValidation.CLIENT_NAME_MAX_NAME_LENGTH, message = ModelValidation.CLIENT_NAME_LENGTH_EXCEEDED)
@@ -30,11 +34,18 @@ public class ClientUpdateDTO {
         this.email = email;
     }
 
-    public long getId() {
+    public ClientUpdateDTO(Long id, String name, String telephone, String email) {
+        this.id = id;
+        this.name = name;
+        this.telephone = telephone;
+        this.email = email;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -61,4 +72,7 @@ public class ClientUpdateDTO {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public int getVersion() { return version; }
+    public void setVersion(int version) { this.version = version; }
 }

@@ -9,6 +9,7 @@ import services.services.contracts.ITransportCompanyService;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Set;
 
 public class TransportCompanyController {
     private final Validator validator;
@@ -26,7 +27,7 @@ public class TransportCompanyController {
         String address = "1 Vasil Levski blvd., Troyan, Lovech";
 
         TransportCompanyCreateDTO company = new TransportCompanyCreateDTO(name, address);
-        var violations = validator.validate(company);
+        Set<ConstraintViolation<TransportCompanyCreateDTO>> violations = validator.validate(company);
 
         // If there are violations, handle them
         if (!violations.isEmpty()) {
@@ -62,7 +63,7 @@ public class TransportCompanyController {
         // Get all
         try {
             List<TransportCompanyViewDTO> entities =
-                    transportCompanyService.getAll(0, 10, "name", true);
+                    transportCompanyService.getAll(0, 10, "name", true, null);
             System.out.println("Printing all entities successfully." + System.lineSeparator());
             for (var entity : entities) {
                 System.out.println(entity.toString());
@@ -94,16 +95,16 @@ public class TransportCompanyController {
         try {
             Long idEntityToUpdate = 1L; // from the company seeder
             TransportCompanyViewDTO entityToUpdate = transportCompanyService.getById(idEntityToUpdate);
-            System.out.println("Name before update" + entityToUpdate.getCompanyName());
+            System.out.println("Name before update" + entityToUpdate.getName());
 
             TransportCompanyUpdateDTO updateDTO = new TransportCompanyUpdateDTO();
             updateDTO.setId(idEntityToUpdate); // Set the ID explicitly
-            updateDTO.setCompanyName("DXC Technology");
+            updateDTO.setName("DXC Technology");
             updateDTO.setAddress(entityToUpdate.getAddress());
             transportCompanyService.update(updateDTO);
             // getting company after updated name
             TransportCompanyViewDTO updatedEntity = transportCompanyService.getById(idEntityToUpdate);
-            System.out.println("Name after update" + updatedEntity.getCompanyName());
+            System.out.println("Name after update" + updatedEntity.getName());
         } catch (Exception e) {
             System.out.println("Error while updating company.");
         }

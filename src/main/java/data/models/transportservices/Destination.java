@@ -5,7 +5,6 @@ import data.common.ModelValidation;
 import jakarta.persistence.*;
 
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "destinations")
 public class Destination extends BaseModel {
 

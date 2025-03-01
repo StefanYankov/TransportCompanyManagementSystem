@@ -9,9 +9,6 @@ public class TransportCargoServiceViewDTO extends TransportServiceViewDTO {
     public int heightInCentimeters;
     public String description;
 
-    // ... constructors, getters, and setters
-
-
     public TransportCargoServiceViewDTO() {
     }
 

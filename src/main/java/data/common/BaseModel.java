@@ -1,6 +1,7 @@
 package data.common;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -62,5 +63,32 @@ public abstract class BaseModel implements IAuditInfo {
 
     public void setVersion(Long version) {
         this.version = version;
+    }
+
+    /**
+     * Compares this entity to another based on their IDs.
+     * Two entities are equal if they are of the same class and have the same non-null ID.
+     *
+     * @param o the object to compare with
+     * @return true if the entities are equal by ID, false otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BaseModel that = (BaseModel) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    /**
+     * Generates a hash code based on the entity's ID.
+     * If the ID is null, returns a default hash to avoid inconsistencies.
+     *
+     * @return the hash code
+     */
+    @Override
+    public int hashCode() {
+        return id != null ? Objects.hash(id) : 31; // Arbitrary constant for null ID
+
     }
 }

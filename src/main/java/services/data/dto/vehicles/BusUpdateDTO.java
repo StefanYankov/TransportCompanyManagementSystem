@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 public class BusUpdateDTO extends TransportPeopleVehicleUpdateDTO {
 
-    private Boolean hasRestroom;
+    private Boolean hasRestroom; // Changed back to Boolean
 
     @NotNull(message = ModelValidation.LUGGAGE_CAPACITY_REQUIRED)
     @DecimalMin(value = ModelValidation.MINIMUM_ALLOWED_LUGGAGE_CAPACITY, message = ModelValidation.INVALID_MINIMUM_LUGGAGE_CAPACITY)
@@ -18,15 +18,15 @@ public class BusUpdateDTO extends TransportPeopleVehicleUpdateDTO {
 
     public BusUpdateDTO(Long id, String registrationPlate, Long transportCompanyId, Integer maxPassengerCapacity, Boolean hasRestroom, BigDecimal luggageCapacity) {
         super(id, registrationPlate, transportCompanyId, maxPassengerCapacity);
-        this.hasRestroom = hasRestroom;
+        this.hasRestroom = hasRestroom; // No defaulting here
         this.luggageCapacity = luggageCapacity;
     }
 
-    public Boolean getHasRestroom() {
+    public Boolean getHasRestroom() { // Changed to Boolean
         return hasRestroom;
     }
 
-    public void setHasRestroom(Boolean hasRestroom) {
+    public void setHasRestroom(Boolean hasRestroom) { // Changed to Boolean
         this.hasRestroom = hasRestroom;
     }
 

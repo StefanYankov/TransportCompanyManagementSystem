@@ -5,11 +5,11 @@ import java.math.BigDecimal;
 public class TransportCargoServiceUpdateDTO extends TransportServiceUpdateDTO {
 
     // TODO: add validation
-    public BigDecimal weightInKilograms;
-    public int lengthInCentimeters;
-    public int widthInCentimeters;
-    public int heightInCentimeters;
-    public String description;
+    private BigDecimal weightInKilograms;
+    private int lengthInCentimeters;
+    private int widthInCentimeters;
+    private int heightInCentimeters;
+    private String description;
 
     public TransportCargoServiceUpdateDTO() {
     }

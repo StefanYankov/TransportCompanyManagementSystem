@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 
 public abstract class VehicleUpdateDTO {
 
+    private int version;
     @NotNull(message = ModelValidation.ID_REQUIRED)
     private Long id;
 
@@ -47,5 +48,13 @@ public abstract class VehicleUpdateDTO {
 
     public void setTransportCompanyId(Long transportCompanyId) {
         this.transportCompanyId = transportCompanyId;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
     }
 }

@@ -38,6 +38,7 @@ public class ModelValidation {
     public static final int MINIMUM_NUMBER_OF_PASSENGERS = 0;
     public static final String PASSENGERS_MUST_BE_GREATER_THAN = "Passengers must be greater than " + MINIMUM_NUMBER_OF_PASSENGERS;
     public static final String MAX_PASSENGER_CAPACITY_REQUIRED = "Maximum passenger capacity is required";
+    public static final String PASSENGER_OVERHEAD_STORAGE_CANNOT_BE_NULL = "Password overhead cannot be null";
 
     public static final String TRANSPORT_COMPANY_IS_REQUIRED = "Transport company is required.";
 
@@ -74,6 +75,9 @@ public class ModelValidation {
     public static final String LUGGAGE_CAPACITY_REQUIRED = "Luggage capacity is required";
     public static final String DESTINATION_CANNOT_BLANK = "Destination cannot be blank";
     public static final String DESTINATION_ADDRESS_MAX_LENGTH_EXCEEDED = "Destination address length cannot exceed " + MAX_ADDRESS_LENGTH ;
+
+    public static final String DIMENSION_REQUIRED = "Dimension is required.";
+    public static final String RESTROOM_FLAG_IS_REQUIRED = "Restroom flag is required.";
 
 
     private ModelValidation() {

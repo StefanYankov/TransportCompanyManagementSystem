@@ -2,7 +2,7 @@ package services.data.dto.employees;
 
 import java.math.BigDecimal;
 
-public class EmployeeViewDTO {
+public abstract class EmployeeViewDTO {
     private Long id;
     private String firstName;
     private String familyName;

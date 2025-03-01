@@ -1,23 +1,15 @@
 package services.data.dto.companies;
 
-import services.data.dto.employees.EmployeeViewDTO;
-
 import java.util.Set;
 
 public class TransportCompanyViewDTO {
 
-    public long id;
-    private String companyName;
+    private long id;
+    private String name;
     private String address;
-    private Set<EmployeeViewDTO> employees;
+    private Set<Long> employeeIds;
 
     public TransportCompanyViewDTO() {
-    }
-
-    public TransportCompanyViewDTO(String address, String companyName, long id) {
-        this.address = address;
-        this.companyName = companyName;
-        this.id = id;
     }
 
     public String getAddress() {
@@ -28,12 +20,12 @@ public class TransportCompanyViewDTO {
         this.address = address;
     }
 
-    public String getCompanyName() {
-        return companyName;
+    public String getName() {
+        return name;
     }
 
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public long getId() {
@@ -44,13 +36,21 @@ public class TransportCompanyViewDTO {
         this.id = id;
     }
 
+    public Set<Long> getEmployeeIds() {
+        return employeeIds;
+    }
+
+    public void setEmployeeIds(Set<Long> employeeIds) {
+        this.employeeIds = employeeIds;
+    }
+
     @Override
     public String toString() {
         return "TransportCompanyViewDTO{" +
                 "id=" + id +
-                ", companyName='" + companyName + '\'' +
+                ", companyName='" + name + '\'' +
                 ", address='" + address + '\'' +
-                ", employees=" + employees +
+                ", employeeIds=" + employeeIds +
                 '}';
     }
 }

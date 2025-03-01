@@ -1,137 +1,123 @@
 package services.services.contracts;
 
-import data.models.transportservices.TransportCargoService;
+import data.repositories.exceptions.RepositoryException;
 import services.data.dto.transportservices.TransportCargoServiceCreateDTO;
 import services.data.dto.transportservices.TransportCargoServiceUpdateDTO;
+import services.data.dto.transportservices.TransportCargoServiceViewDTO;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
 
 /**
- * Service interface for managing {@link TransportCargoService} entities with CRUD operations, sorting, and file I/O.
+ * Interface defining operations for managing TransportCargoService entities in the transport system.
+ * Provides CRUD operations and cargo-specific queries.
+ * All methods may throw RepositoryException as an unchecked exception.
  */
 public interface ITransportCargoServiceService {
 
     /**
-     * Creates a new cargo transport service synchronously.
+     * Creates a new cargo transport service based on the provided DTO.
      *
-     * @param dto the DTO containing data for the new cargo transport service
-     * @return the created TransportCargoService entity
+     * @param dto The DTO containing cargo service creation data.
+     * @return A view DTO representing the created cargo service.
+     * @throws IllegalArgumentException if the DTO is null.
+     * @throws RepositoryException if creation fails (e.g., invalid references, database errors).
      */
-    public TransportCargoService create(TransportCargoServiceCreateDTO dto);
+    TransportCargoServiceViewDTO create(TransportCargoServiceCreateDTO dto);
 
     /**
-     * Creates a new cargo transport service asynchronously.
+     * Updates an existing cargo transport service based on the provided DTO.
      *
-     * @param dto the DTO containing data for the new cargo transport service
-     * @return a CompletableFuture resolving to the created TransportCargoService entity
+     * @param dto The DTO containing updated cargo service data.
+     * @return A view DTO representing the updated cargo service.
+     * @throws IllegalArgumentException if the DTO or its ID is null.
+     * @throws RepositoryException if the service isn’t found or update fails (e.g., database errors).
      */
-    public CompletableFuture<TransportCargoService> createAsync(TransportCargoServiceCreateDTO dto);
+    TransportCargoServiceViewDTO update(TransportCargoServiceUpdateDTO dto);
 
     /**
-     * Updates an existing cargo transport service synchronously.
+     * Deletes a cargo transport service by its ID.
      *
-     * @param dto the DTO containing updated data for the cargo transport service
-     * @return the updated TransportCargoService entity
-     */
-    TransportCargoService update(TransportCargoServiceUpdateDTO dto);
-
-    /**
-     * Updates an existing cargo transport service asynchronously.
-     *
-     * @param dto the DTO containing updated data for the cargo transport service
-     * @return a CompletableFuture resolving to the updated TransportCargoService entity
-     */
-    CompletableFuture<TransportCargoService> updateAsync(TransportCargoServiceUpdateDTO dto);
-
-    /**
-     * Deletes a cargo transport service by its ID synchronously.
-     *
-     * @param id the ID of the cargo transport service to delete
+     * @param id The ID of the cargo service to delete.
+     * @throws IllegalArgumentException if the ID is null.
+     * @throws RepositoryException if deletion fails (e.g., service not found, database errors).
      */
     void delete(Long id);
 
     /**
-     * Deletes a cargo transport service by its ID asynchronously.
+     * Retrieves a cargo transport service by its ID.
      *
-     * @param id the ID of the cargo transport service to delete
-     * @return a CompletableFuture indicating when the deletion is complete
+     * @param id The ID of the cargo service to retrieve.
+     * @return A view DTO representing the cargo service, or null if not found.
+     * @throws IllegalArgumentException if the ID is null.
+     * @throws RepositoryException if retrieval fails (e.g., database errors).
      */
-    CompletableFuture<Void> deleteAsync(Long id);
+    TransportCargoServiceViewDTO getById(Long id);
 
     /**
-     * Retrieves a cargo transport service by its ID synchronously.
+     * Retrieves a paginated list of all cargo transport services.
      *
-     * @param id the ID of the cargo transport service to retrieve
-     * @return the TransportCargoService entity, or null if not found
+     * @param page The page number (0-based).
+     * @param size The number of items per page.
+     * @param orderBy The field to sort by (e.g., "startingDate").
+     * @param ascending Whether to sort in ascending order.
+     * @return A list of cargo service view DTOs.
+     * @throws RepositoryException if the query fails (e.g., database errors).
      */
-    TransportCargoService getById(Long id);
+    List<TransportCargoServiceViewDTO> getAll(int page, int size, String orderBy, boolean ascending);
 
     /**
-     * Retrieves a list of all cargo transport services synchronously with pagination and sorting.
+     * Retrieves cargo transport services by transport company ID.
      *
-     * @param page the page number (0-based)
-     * @param size the number of entities per page
-     * @param orderBy the field to sort by (e.g., "startingDate")
-     * @param ascending true for ascending order, false for descending
-     * @return a list of TransportCargoService entities
+     * @param companyId The ID of the transport company.
+     * @param page The page number (0-based).
+     * @param size The number of items per page.
+     * @return A list of cargo service view DTOs.
+     * @throws IllegalArgumentException if the company ID is null.
+     * @throws RepositoryException if the query fails (e.g., database errors).
      */
-    List<TransportCargoService> getAll(int page, int size, String orderBy, boolean ascending);
+    List<TransportCargoServiceViewDTO> getByCompany(Long companyId, int page, int size);
 
     /**
-     * Retrieves cargo transports sorted by destination synchronously.
+     * Retrieves cargo transport services by client ID.
      *
-     * @param ascending true for ascending order by startingLocation, false for descending
-     * @return a list of TransportCargoService entities sorted by destination
+     * @param clientId The ID of the client.
+     * @param page The page number (0-based).
+     * @param size The number of items per page.
+     * @return A list of cargo service view DTOs.
+     * @throws IllegalArgumentException if the client ID is null.
+     * @throws RepositoryException if the query fails (e.g., database errors).
      */
-    List<TransportCargoService> getTransportsSortedByDestination(boolean ascending);
+    List<TransportCargoServiceViewDTO> getByClient(Long clientId, int page, int size);
 
     /**
-     * Saves all cargo transport data to a binary file synchronously.
+     * Retrieves cargo transport services by driver ID.
      *
-     * @param filePath the path to the binary file
-     * @throws IOException if file writing fails
+     * @param driverId The ID of the driver.
+     * @param page The page number (0-based).
+     * @param size The number of items per page.
+     * @return A list of cargo service view DTOs.
+     * @throws IllegalArgumentException if the driver ID is null.
+     * @throws RepositoryException if the query fails (e.g., database errors).
      */
-    public void saveToBinaryFile(String filePath) throws IOException;
+    List<TransportCargoServiceViewDTO> getByDriver(Long driverId, int page, int size);
 
     /**
-     * Loads cargo transport data from a binary file synchronously.
+     * Retrieves active (non-delivered) cargo transport services.
      *
-     * @param filePath the path to the binary file
-     * @throws IOException if file reading fails
-     * @throws ClassNotFoundException if deserialization fails
+     * @param page The page number (0-based).
+     * @param size The number of items per page.
+     * @return A list of active cargo service view DTOs.
+     * @throws RepositoryException if the query fails (e.g., database errors).
      */
-    public void loadFromBinaryFile(String filePath) throws IOException, ClassNotFoundException;
+    List<TransportCargoServiceViewDTO> getActiveServices(int page, int size);
 
     /**
-     * Saves all cargo transport data to a JSON file synchronously.
+     * Retrieves total cargo weight per driver.
      *
-     * @param filePath the path to the JSON file
-     * @throws IOException if file writing fails
+     * @return A map of driver IDs to total cargo weight in kilograms.
+     * @throws RepositoryException if the query fails (e.g., database errors).
      */
-    public void saveToJsonFile(String filePath) throws IOException;
-
-    /**
-     * Loads cargo transport data from a JSON file synchronously.
-     *
-     * @param filePath the path to the JSON file
-     * @throws IOException if file reading fails
-     */
-    public void loadFromJsonFile(String filePath) throws IOException;
-
-    /**
-     * Calculates the total number of cargo transports synchronously.
-     *
-     * @return the total count of TransportCargoService entities
-     */
-    public int getTotalTransportCount();
-
-    /**
-     * Calculates the total revenue from all cargo transports synchronously.
-     *
-     * @return the total revenue as a BigDecimal
-     */
-    public BigDecimal getTotalRevenue();
+    Map<Long, BigDecimal> getTotalCargoWeightPerDriver();
 }

@@ -1,14 +1,32 @@
 package services.data.dto.transportservices;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import data.common.ModelValidation;
+import jakarta.validation.constraints.Size;
+
 import java.math.BigDecimal;
 
 public class TransportCargoServiceCreateDTO extends TransportServiceCreateDTO {
-    // TODO: add data validation
-    public BigDecimal weightInKilograms;
-    public int lengthInCentimeters;
-    public int widthInCentimeters;
-    public int heightInCentimeters;
-    public String description;
+    @NotNull(message = ModelValidation.DIMENSION_REQUIRED)
+    @DecimalMin(value = ModelValidation.MIN_CARGO_CAPACITY, message = ModelValidation.INVALID_ALLOWED_DIMENSIONS_MESSAGE)
+    private BigDecimal weightInKilograms;
+
+    @NotNull(message = ModelValidation.DIMENSION_REQUIRED)
+    @Min(value = ModelValidation.MINIMUM_ALLOWED_DIMENSIONS, message = ModelValidation.INVALID_ALLOWED_DIMENSIONS_MESSAGE)
+    private Integer lengthInCentimeters; // Use Integer for nullability
+
+    @NotNull(message = ModelValidation.DIMENSION_REQUIRED)
+    @Min(value = ModelValidation.MINIMUM_ALLOWED_DIMENSIONS, message = ModelValidation.INVALID_ALLOWED_DIMENSIONS_MESSAGE)
+    private Integer widthInCentimeters;
+
+    @NotNull(message = ModelValidation.DIMENSION_REQUIRED)
+    @Min(value = ModelValidation.MINIMUM_ALLOWED_DIMENSIONS, message = ModelValidation.INVALID_ALLOWED_DIMENSIONS_MESSAGE)
+    private Integer heightInCentimeters;
+
+    @Size(max = ModelValidation.DESCRIPTION_MAXIMUM_LENGTH, message = ModelValidation.DESCRIPTION_ABOVE_MAXIMUM_LENGTH)
+    private String description;
 
     public TransportCargoServiceCreateDTO() {
     }

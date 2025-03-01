@@ -18,8 +18,6 @@ import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,7 +34,7 @@ public class GenericSeederTest {
         // H2 in-memory setup: Fresh DB per test with "create-drop"
         sessionFactory = new Configuration().configure("META-INF/persistence.xml").buildSessionFactory();
         executorService = Executors.newFixedThreadPool(2);
-        companyRepo = new GenericRepository<>(sessionFactory, executorService, TransportCompany.class);
+        companyRepo = new GenericRepository<>(sessionFactory, TransportCompany.class);
 
         // Gson with adapters for your entities
         gson = new GsonBuilder()
@@ -119,40 +117,6 @@ public class GenericSeederTest {
     }
 
     @Test
-    public void SeedAsync_WhenDatabaseIsEmpty_ShouldInsertEntitiesFromJson() throws ExecutionException, InterruptedException, IOException {
-
-        // Arrange: Create a temp JSON file
-        String jsonContent = "[{\"id\": 1, \"name\": \"Async Co\", \"address\": \"123 Async Ln\", \"createdOn\": \"2025-02-21T10:00:00\"}]";
-        File tempFile = File.createTempFile("test_seed_async", ".json");
-        Files.writeString(tempFile.toPath(), jsonContent);
-        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(companyRepo, tempFile.getAbsolutePath(), TransportCompany.class, gson);
-
-        // Act: Seed asynchronously
-        seeder.seedAsync().get();
-
-        // Assert: Verify data was inserted
-        List<TransportCompany> companies = companyRepo.getAll(0, 10, "id", true);
-        assertEquals(1, companies.size(), "H2 should have one async-seeded company");
-        assertEquals("Async Co", companies.getFirst().getName());
-    }
-
-    @Test
-    public void SeedAsync_WhenJsonFileDoesNotExist_ShouldThrowException() throws ExecutionException, InterruptedException {
-
-        // Arrange: Set up seeder with a non-existent file path
-        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(companyRepo, "/nonexistent.json", TransportCompany.class, gson);
-
-        // Act: Seed asynchronously
-        CompletableFuture<Void> future = seeder.seedAsync();
-
-        // Assert: Expect an exception
-        ExecutionException exception = assertThrows(ExecutionException.class,
-                future::get,
-                "Expected async seeding to fail");
-        assertTrue(exception.getCause().getMessage().contains("Failed to load JSON"));
-    }
-
-    @Test
     public void Seed_WhenJsonIsMalformed_ShouldThrowException() throws IOException {
         // Arrange: Malformed JSON (missing closing bracket)
         String jsonContent = "[{\"id\": 1, \"name\": \"Fast Transport\", \"address\": \"123 Main St\"";
@@ -202,28 +166,4 @@ public class GenericSeederTest {
         assertEquals("Valid Co", companies.getFirst().getName());
     }
 
-    @Test
-    public void SeedAsync_WhenLargeDataset_ShouldHandleEfficiently() throws IOException, ExecutionException, InterruptedException {
-        // Arrange: Generate a large JSON dataset (100 entities)
-        StringBuilder jsonContent = new StringBuilder("[");
-        for (int i = 1; i <= 100; i++) {
-            jsonContent.append("{\"id\": ").append(i)
-                    .append(", \"name\": \"Company ").append(i)
-                    .append("\", \"address\": \"").append(i).append(" St\", \"createdOn\": \"2025-02-21T10:00:00\"}");
-            if (i < 100) jsonContent.append(",");
-        }
-        jsonContent.append("]");
-        File tempFile = File.createTempFile("test_seed_large", ".json");
-        Files.writeString(tempFile.toPath(), jsonContent.toString());
-
-        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(companyRepo, tempFile.getAbsolutePath(), TransportCompany.class, gson);
-
-        // Act
-        seeder.seedAsync().get();
-
-        // Assert
-        List<TransportCompany> companies = companyRepo.getAll(0, 1000, "id", true);
-        assertEquals(100, companies.size(), "H2 should handle large async seeding");
-        assertEquals("Company 1", companies.getFirst().getName());
-    }
 }

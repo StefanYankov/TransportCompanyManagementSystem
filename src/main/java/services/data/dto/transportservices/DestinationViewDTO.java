@@ -13,7 +13,6 @@ public class DestinationViewDTO {
         this.endingLocation = endingLocation;
     }
 
-    // Getters and setters
     public Long getId() {
         return id;
     }

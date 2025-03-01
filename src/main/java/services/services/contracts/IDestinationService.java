@@ -1,80 +1,90 @@
 package services.services.contracts;
 
-import data.models.transportservices.Destination;
+import data.repositories.exceptions.RepositoryException;
 import services.data.dto.transportservices.DestinationCreateDTO;
 import services.data.dto.transportservices.DestinationUpdateDTO;
+import services.data.dto.transportservices.DestinationViewDTO;
+import services.data.dto.transportservices.TransportServiceViewDTO;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
 
 /**
- * Service interface for managing {@link Destination} entities with CRUD operations.
+ * Interface defining operations for managing {@link data.models.transportservices.Destination} entities in the transport system.
+ * Provides methods for CRUD operations, destination-specific queries, and retrieval of related transport services.
+ * All methods may throw {@link RepositoryException} as an unchecked exception, documented below.
  */
 public interface IDestinationService {
 
     /**
-     * Creates a new destination synchronously.
+     * Creates a new destination based on the provided DTO.
      *
-     * @param dto the DTO containing data for the new destination
-     * @return the created Destination entity
+     * @param dto the data transfer object containing destination creation details
+     * @return a view DTO representing the created destination
+     * @throws IllegalArgumentException if the DTO is null
+     * @throws RepositoryException if the destination cannot be created (e.g., database errors)
      */
-    public Destination create(DestinationCreateDTO dto);
+    public DestinationViewDTO create(DestinationCreateDTO dto);
 
     /**
-     * Creates a new destination asynchronously.
+     * Updates an existing destination based on the provided DTO.
      *
-     * @param dto the DTO containing data for the new destination
-     * @return a CompletableFuture resolving to the created Destination entity
+     * @param dto the data transfer object containing updated destination details
+     * @return a view DTO representing the updated destination
+     * @throws IllegalArgumentException if the DTO or its ID is null
+     * @throws RepositoryException if the destination is not found or update fails (e.g., database errors)
      */
-    public CompletableFuture<Destination> createAsync(DestinationCreateDTO dto);
+    public DestinationViewDTO update(DestinationUpdateDTO dto);
 
     /**
-     * Updates an existing destination synchronously.
-     *
-     * @param dto the DTO containing updated data for the destination
-     * @return the updated Destination entity
-     */
-    public Destination update(DestinationUpdateDTO dto);
-
-    /**
-     * Updates an existing destination asynchronously.
-     *
-     * @param dto the DTO containing updated data for the destination
-     * @return a CompletableFuture resolving to the updated Destination entity
-     */
-    public CompletableFuture<Destination> updateAsync(DestinationUpdateDTO dto);
-
-    /**
-     * Deletes a destination by its ID synchronously.
+     * Deletes a destination by its ID.
      *
      * @param id the ID of the destination to delete
+     * @throws IllegalArgumentException if the ID is null
+     * @throws RepositoryException if deletion fails (e.g., destination not found, database errors)
      */
     public void delete(Long id);
 
     /**
-     * Deletes a destination by its ID asynchronously.
-     *
-     * @param id the ID of the destination to delete
-     * @return a CompletableFuture indicating when the deletion is complete
-     */
-    public CompletableFuture<Void> deleteAsync(Long id);
-
-    /**
-     * Retrieves a destination by its ID synchronously.
+     * Retrieves a destination by its ID.
      *
      * @param id the ID of the destination to retrieve
-     * @return the Destination entity, or null if not found
+     * @return a view DTO of the destination if found, null otherwise
+     * @throws IllegalArgumentException if the ID is null
+     * @throws RepositoryException if retrieval fails (e.g., database errors)
      */
-    public Destination getById(Long id);
+    public DestinationViewDTO getById(Long id);
 
     /**
-     * Retrieves a list of all destinations synchronously with pagination and sorting.
+     * Retrieves a paginated list of all destinations, optionally filtered and sorted.
      *
-     * @param page the page number (0-based)
-     * @param size the number of entities per page
-     * @param orderBy the field to sort by (e.g., "startingLocation")
+     * @param page      the page number (0-based)
+     * @param size      the number of destinations per page
+     * @param orderBy   the field to sort by (e.g., "startingLocation"); may be null for no sorting
      * @param ascending true for ascending order, false for descending
-     * @return a list of Destination entities
+     * @param filter    an optional filter string to match against startingLocation or endingLocation; may be null
+     * @return a list of destination view DTOs
+     * @throws RepositoryException if the query fails (e.g., invalid orderBy field)
      */
-    public List<Destination> getAll(int page, int size, String orderBy, boolean ascending);
+    public List<DestinationViewDTO> getAll(int page, int size, String orderBy, boolean ascending, String filter);
+
+    /**
+     * Finds destinations matching the given criteria, optionally sorted.
+     *
+     * @param conditions map of field names to values for filtering (e.g., {"startingLocation": "New York"})
+     * @param orderBy    the field to sort by; may be null for no sorting
+     * @param ascending  true for ascending order, false for descending
+     * @return a list of destination view DTOs matching the criteria
+     * @throws RepositoryException if the query fails (e.g., invalid field name)
+     */
+    public List<DestinationViewDTO> findByCriteria(Map<String, Object> conditions, String orderBy, boolean ascending);
+
+    /**
+     * Retrieves a list of transport services associated with each destination.
+     *
+     * @return a map where keys are destination IDs and values are lists of transport service view DTOs
+     * @throws RepositoryException if the query fails (e.g., database errors)
+     */
+    public Map<Long, List<TransportServiceViewDTO>> getTransportServicesByDestination();
+
 }

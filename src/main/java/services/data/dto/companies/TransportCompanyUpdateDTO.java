@@ -6,13 +6,13 @@ import org.hibernate.validator.constraints.Length;
 
 public class TransportCompanyUpdateDTO {
 
-    private long id;
+    private Long id;
 
     private int version;
 
     @NotBlank(message = ModelValidation.NAME_IS_REQUIRED)
     @Length(min = ModelValidation.MIN_NAME_LENGTH, max = ModelValidation.MAX_NAME_LENGTH)
-    private String companyName;
+    private String name;
 
     @NotBlank(message = ModelValidation.ADDRESS_IS_REQUIRED)
     @Length(min = ModelValidation.MIN_ADDRESS_LENGTH, max = ModelValidation.MAX_ADDRESS_LENGTH)
@@ -21,17 +21,17 @@ public class TransportCompanyUpdateDTO {
     public TransportCompanyUpdateDTO() {
     }
 
-    public TransportCompanyUpdateDTO(long id, String companyName, String address) {
+    public TransportCompanyUpdateDTO(Long id, String name, String address) {
         this.id = id;
-        this.companyName = companyName;
+        this.name = name;
         this.address = address;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -43,11 +43,14 @@ public class TransportCompanyUpdateDTO {
         this.address = address;
     }
 
-    public String getCompanyName() {
-        return companyName;
+    public String getName() {
+        return name;
     }
 
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
+    public void setName(String name) {
+        this.name = name;
     }
+
+    public int getVersion() { return version; }
+    public void setVersion(int version) { this.version = version; }
 }

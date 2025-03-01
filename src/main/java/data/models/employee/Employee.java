@@ -5,6 +5,8 @@ import data.common.ModelValidation;
 import data.common.annotations.NonNegativeBigDecimal;
 import data.models.TransportCompany;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 
@@ -49,7 +51,8 @@ public abstract class Employee extends BaseModel {
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "transport_company_id", nullable = false)
+    @JoinColumn(name = "transport_company_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     public TransportCompany getTransportCompany() {
         return transportCompany;
     }

@@ -1,300 +1,237 @@
 package services.services;
 
-import data.common.seeding.LocalDateAdapter;
-import data.common.seeding.LocalDateTimeAdapter;
-import data.models.Client;
+import data.models.transportservices.TransportCargoService;
 import data.models.TransportCompany;
+import data.models.Client;
 import data.models.employee.Driver;
 import data.models.transportservices.Destination;
-import data.models.transportservices.TransportCargoService;
 import data.models.vehicles.Vehicle;
 import data.repositories.IGenericRepository;
-
+import data.repositories.exceptions.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import services.common.Constants;
 import services.data.dto.transportservices.TransportCargoServiceCreateDTO;
 import services.data.dto.transportservices.TransportCargoServiceUpdateDTO;
+import services.data.dto.transportservices.TransportCargoServiceViewDTO;
 import services.data.mapping.mappers.TransportCargoServiceMapper;
 import services.services.contracts.ITransportCargoServiceService;
 
-import java.io.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+import java.util.*;
+import java.util.stream.Collectors;
 
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.time.LocalDateTime;
-
-/**
- * Service implementation for managing {@link TransportCargoService} entities.
- */
 public class TransportCargoServiceService implements ITransportCargoServiceService {
     private static final Logger logger = LoggerFactory.getLogger(TransportCargoServiceService.class);
-    private final IGenericRepository<TransportCargoService, Long> transportRepo;
+    private final IGenericRepository<TransportCargoService, Long> cargoServiceRepo;
     private final TransportCargoServiceMapper mapper;
-    private final IGenericRepository<TransportCompany, Long> companyRepo;
-    private final IGenericRepository<Destination, Long> destinationRepo;
-    private final IGenericRepository<Client, Long> clientRepo;
-    private final IGenericRepository<Vehicle, Long> vehicleRepo;
-    private final IGenericRepository<Driver, Long> driverRepo;
-    private final Gson gson;
 
-    public TransportCargoServiceService(IGenericRepository<TransportCargoService, Long> transportRepo,
-                                        TransportCargoServiceMapper mapper,
+    public TransportCargoServiceService(IGenericRepository<TransportCargoService, Long> cargoServiceRepo,
                                         IGenericRepository<TransportCompany, Long> companyRepo,
-                                        IGenericRepository<Destination, Long> destinationRepo,
                                         IGenericRepository<Client, Long> clientRepo,
-                                        IGenericRepository<Vehicle, Long> vehicleRepo,
-                                        IGenericRepository<Driver, Long> driverRepo) {
-        this.transportRepo = transportRepo;
-        this.mapper = mapper;
-        this.companyRepo = companyRepo;
-        this.destinationRepo = destinationRepo;
-        this.clientRepo = clientRepo;
-        this.vehicleRepo = vehicleRepo;
-        this.driverRepo = driverRepo;
-        this.gson = new GsonBuilder()
-                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-                .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
-                .setPrettyPrinting()
-                .create();
+                                        IGenericRepository<Driver, Long> driverRepo,
+                                        IGenericRepository<Destination, Long> destinationRepo,
+                                        IGenericRepository<Vehicle, Long> vehicleRepo) {
+        this.cargoServiceRepo = cargoServiceRepo;
+        this.mapper = new TransportCargoServiceMapper(companyRepo, clientRepo, driverRepo, destinationRepo, vehicleRepo);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public TransportCargoService create(TransportCargoServiceCreateDTO dto) {
-        logger.debug("Creating cargo transport service with DTO: {}", dto);
-        TransportCargoService entity = mapper.toEntity(dto);
-        TransportCargoService result = transportRepo.create(entity);
-        logger.info("Cargo transport service created with ID: {}", result.getId());
-        return result;
+    public TransportCargoServiceViewDTO create(TransportCargoServiceCreateDTO dto) {
+        if (dto == null) {
+            logger.error("Cannot create {}: DTO is null", Constants.TRANSPORT_CARGO_SERVICE);
+            throw new IllegalArgumentException("TransportCargoServiceCreateDTO must not be null");
+        }
+        logger.debug("Creating {} with DTO: {}", Constants.TRANSPORT_CARGO_SERVICE, dto);
+        try {
+            TransportCargoService entity = mapper.toEntity(dto);
+            TransportCargoService created = cargoServiceRepo.create(entity);
+            logger.info("{} created with ID: {}", Constants.TRANSPORT_CARGO_SERVICE, created.getId());
+            return mapper.toViewDTO(created);
+        } catch (RepositoryException e) {
+            logger.error("Failed to create {}: startingDate={}, cause: {}", Constants.TRANSPORT_CARGO_SERVICE, dto.getStartingDate(), e.getMessage(), e);
+            throw e;
+        }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public CompletableFuture<TransportCargoService> createAsync(TransportCargoServiceCreateDTO dto) {
-        logger.debug("Async creating cargo transport service with DTO: {}", dto);
-        TransportCargoService entity = mapper.toEntity(dto);
-        return transportRepo.createAsync(entity)
-                .whenComplete((result, throwable) -> {
-                    if (throwable != null) {
-                        logger.error("Failed to create cargo transport service asynchronously", throwable);
-                    } else {
-                        logger.info("Cargo transport service created asynchronously with ID: {}", result.getId());
-                    }
-                });
+    public TransportCargoServiceViewDTO update(TransportCargoServiceUpdateDTO dto) {
+        if (dto == null || dto.getId() == null) {
+            logger.error("Cannot update {}: DTO or ID is null", Constants.TRANSPORT_CARGO_SERVICE);
+            throw new IllegalArgumentException("TransportCargoServiceUpdateDTO and ID must not be null");
+        }
+        logger.debug("Updating {} with DTO: {}", Constants.TRANSPORT_CARGO_SERVICE, dto);
+        try {
+            TransportCargoService existing = cargoServiceRepo.getById(dto.getId())
+                    .orElseThrow(() -> new RepositoryException("TransportCargoService not found with ID: " + dto.getId()));
+            TransportCargoService updatedEntity = mapper.toEntity(dto);
+            updatedEntity.setVersion(existing.getVersion()); // Preserve version for optimistic locking
+            TransportCargoServiceViewDTO result = cargoServiceRepo.updateAndMap(updatedEntity, mapper::toViewDTO, null);
+            logger.info("{} updated with ID: {}", Constants.TRANSPORT_CARGO_SERVICE, result.getId());
+            return result;
+        } catch (RepositoryException e) {
+            logger.error("Failed to update {} with ID: {}, cause: {}", Constants.TRANSPORT_CARGO_SERVICE, dto.getId(), e.getMessage(), e);
+            throw e;
+        }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public TransportCargoService update(TransportCargoServiceUpdateDTO dto) {
-        logger.debug("Updating cargo transport service with DTO: {}", dto);
-        TransportCargoService entity = mapper.toEntity(dto);
-        TransportCargoService result = transportRepo.update(entity);
-        logger.info("Cargo transport service updated with ID: {}", result.getId());
-        return result;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CompletableFuture<TransportCargoService> updateAsync(TransportCargoServiceUpdateDTO dto) {
-        logger.debug("Async updating cargo transport service with DTO: {}", dto);
-        TransportCargoService entity = mapper.toEntity(dto);
-        return transportRepo.updateAsync(entity)
-                .whenComplete((result, throwable) -> {
-                    if (throwable != null) {
-                        logger.error("Failed to update cargo transport service asynchronously", throwable);
-                    } else {
-                        logger.info("Cargo transport service updated asynchronously with ID: {}", result.getId());
-                    }
-                });
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void delete(Long id) {
-        logger.debug("Deleting cargo transport service with ID: {}", id);
-        TransportCargoService entity = transportRepo.getById(id);
-        if (entity != null) {
-            transportRepo.delete(entity);
-            logger.info("Cargo transport service deleted with ID: {}", id);
-        } else {
-            logger.warn("No cargo transport service found to delete with ID: {}", id);
+        if (id == null) {
+            logger.error("Cannot delete {}: ID is null", Constants.TRANSPORT_CARGO_SERVICE);
+            throw new IllegalArgumentException("ID must not be null");
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CompletableFuture<Void> deleteAsync(Long id) {
-        logger.debug("Async deleting cargo transport service with ID: {}", id);
-        return transportRepo.getByIdAsync(id)
-                .thenAccept(entity -> {
-                    if (entity != null) {
-                        transportRepo.deleteAsync(entity)
-                                .whenComplete((v, throwable) -> {
-                                    if (throwable != null) {
-                                        logger.error("Failed to delete cargo transport service asynchronously", throwable);
-                                    } else {
-                                        logger.info("Cargo transport service deleted asynchronously with ID: {}", id);
-                                    }
-                                });
-                    } else {
-                        logger.warn("No cargo transport service found to delete asynchronously with ID: {}", id);
-                    }
-                });
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public TransportCargoService getById(Long id) {
-        logger.debug("Retrieving cargo transport service with ID: {}", id);
-        TransportCargoService result = transportRepo.getById(id);
-        if (result != null) {
-            logger.info("Cargo transport service retrieved with ID: {}", id);
-        } else {
-            logger.warn("No cargo transport service found with ID: {}", id);
-        }
-        return result;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<TransportCargoService> getAll(int page, int size, String orderBy, boolean ascending) {
-        logger.debug("Retrieving all cargo transport services, page: {}, size: {}, orderBy: {}, ascending: {}", page, size, orderBy, ascending);
-        List<TransportCargoService> result = transportRepo.getAll(page, size, orderBy, ascending);
-        logger.info("Retrieved {} cargo transport services", result.size());
-        return result;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<TransportCargoService> getTransportsSortedByDestination(boolean ascending) {
-        logger.debug("Retrieving cargo transports sorted by destination, ascending: {}", ascending);
-        List<TransportCargoService> result = transportRepo.getAll(0, Integer.MAX_VALUE, "destination.startingLocation", ascending);
-        logger.info("Retrieved {} cargo transports sorted by destination", result.size());
-        return result;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void saveToBinaryFile(String filePath) throws IOException {
-        logger.debug("Saving cargo transport data to binary file: {}", filePath);
-        List<TransportCargoService> transports = transportRepo.getAll(0, Integer.MAX_VALUE, "id", true);
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
-            oos.writeObject(transports);
-            logger.info("Saved {} cargo transports to binary file: {}", transports.size(), filePath);
-        } catch (IOException e) {
-            logger.error("Failed to save cargo transport data to binary file: {}", filePath, e);
+        logger.debug("Deleting {} with ID: {}", Constants.TRANSPORT_CARGO_SERVICE, id);
+        try {
+            TransportCargoService entity = cargoServiceRepo.getById(id)
+                    .orElseThrow(() -> new RepositoryException("TransportCargoService not found with ID: " + id));
+            cargoServiceRepo.delete(entity);
+            logger.info("{} deleted with ID: {}", Constants.TRANSPORT_CARGO_SERVICE, id);
+        } catch (RepositoryException e) {
+            logger.error("Failed to delete {} with ID: {}, cause: {}", Constants.TRANSPORT_CARGO_SERVICE, id, e.getMessage(), e);
             throw e;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @SuppressWarnings("unchecked")
     @Override
-    public void loadFromBinaryFile(String filePath) throws IOException, ClassNotFoundException {
-        logger.debug("Loading cargo transport data from binary file: {}", filePath);
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
-            List<TransportCargoService> transports = (List<TransportCargoService>) ois.readObject();
-            for (TransportCargoService transport : transports) {
-                transportRepo.create(transport);
+    public TransportCargoServiceViewDTO getById(Long id) {
+        if (id == null) {
+            logger.error("Cannot retrieve {}: ID is null", Constants.TRANSPORT_CARGO_SERVICE);
+            throw new IllegalArgumentException("ID must not be null");
+        }
+        logger.debug("Retrieving {} with ID: {}", Constants.TRANSPORT_CARGO_SERVICE, id);
+        try {
+            Optional<TransportCargoServiceViewDTO> result = cargoServiceRepo.getByIdAndMap(id, mapper::toViewDTO, null);
+            if (result.isEmpty()) {
+                logger.warn("No {} found with ID: {}", Constants.TRANSPORT_CARGO_SERVICE, id);
+                return null;
             }
-            logger.info("Loaded {} cargo transports from binary file: {}", transports.size(), filePath);
-        } catch (IOException | ClassNotFoundException e) {
-            logger.error("Failed to load cargo transport data from binary file: {}", filePath, e);
+            logger.info("{} retrieved with ID: {}", Constants.TRANSPORT_CARGO_SERVICE, id);
+            return result.get();
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve {} with ID: {}, cause: {}", Constants.TRANSPORT_CARGO_SERVICE, id, e.getMessage(), e);
             throw e;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void saveToJsonFile(String filePath) throws IOException {
-        logger.debug("Saving cargo transport data to JSON file: {}", filePath);
-        List<TransportCargoService> transports = transportRepo.getAll(0, Integer.MAX_VALUE, "id", true);
-        try (FileWriter writer = new FileWriter(filePath)) {
-            gson.toJson(transports, writer);
-            logger.info("Saved {} cargo transports to JSON file: {}", transports.size(), filePath);
-        } catch (IOException e) {
-            logger.error("Failed to save cargo transport data to JSON file: {}", filePath, e);
+    public List<TransportCargoServiceViewDTO> getAll(int page, int size, String orderBy, boolean ascending) {
+        logger.debug("Retrieving all {}: page={}, size={}, orderBy={}, ascending={}", Constants.TRANSPORT_CARGO_SERVICE, page, size, orderBy, ascending);
+        try {
+            List<TransportCargoServiceViewDTO> result = cargoServiceRepo.getAllAndMap(page, size, orderBy, ascending, mapper::toViewDTO, null);
+            logger.info("Retrieved {} {}", result.size(), Constants.TRANSPORT_CARGO_SERVICE);
+            return result;
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve all {}, cause: {}", Constants.TRANSPORT_CARGO_SERVICE, e.getMessage(), e);
             throw e;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void loadFromJsonFile(String filePath) throws IOException {
-        logger.debug("Loading cargo transport data from JSON file: {}", filePath);
-        try (FileReader reader = new FileReader(filePath)) {
-            Type listType = new TypeToken<List<TransportCargoService>>() {
-            }.getType();
-            List<TransportCargoService> transports = gson.fromJson(reader, listType);
-            for (TransportCargoService transport : transports) {
-                transportRepo.create(transport);
-            }
-            logger.info("Loaded {} cargo transports from JSON file: {}", transports.size(), filePath);
-        } catch (IOException e) {
-            logger.error("Failed to load cargo transport data from JSON file: {}", filePath, e);
+    public List<TransportCargoServiceViewDTO> getByCompany(Long companyId, int page, int size) {
+        if (companyId == null) {
+            logger.error("Cannot retrieve {}: Company ID is null", Constants.TRANSPORT_CARGO_SERVICE);
+            throw new IllegalArgumentException("Company ID must not be null");
+        }
+        if (page < 0 || size <= 0) {
+            logger.debug("Invalid pagination for {} by company ID: {}, page: {}, size: {}, returning empty list",
+                    Constants.TRANSPORT_CARGO_SERVICE, companyId, page, size);
+            return Collections.emptyList();
+        }
+        logger.debug("Retrieving {} by company ID: {}, page: {}, size: {}", Constants.TRANSPORT_CARGO_SERVICE, companyId, page, size);
+        try {
+            Map<String, Object> conditions = new HashMap<>();
+            conditions.put("transportCompany.id", companyId);
+            List<TransportCargoService> services = cargoServiceRepo.findByCriteria(conditions, "startingDate", true, page, size);
+            return services.stream().map(mapper::toViewDTO).collect(Collectors.toList());
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve {} by company ID: {}, cause: {}", Constants.TRANSPORT_CARGO_SERVICE, companyId, e.getMessage(), e);
             throw e;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public int getTotalTransportCount() {
-        logger.debug("Calculating total cargo transport count");
-        List<TransportCargoService> transports = transportRepo.getAll(0, Integer.MAX_VALUE, "id", true);
-        int count = transports.size();
-        logger.info("Total cargo transport count: {}", count);
-        return count;
+    public List<TransportCargoServiceViewDTO> getByClient(Long clientId, int page, int size) {
+        if (clientId == null) {
+            logger.error("Cannot retrieve {}: Client ID is null", Constants.TRANSPORT_CARGO_SERVICE);
+            throw new IllegalArgumentException("Client ID must not be null");
+        }
+        if (page < 0 || size <= 0) {
+            logger.debug("Invalid pagination for {} by client ID: {}, page: {}, size: {}, returning empty list",
+                    Constants.TRANSPORT_CARGO_SERVICE, clientId, page, size);
+            return Collections.emptyList();
+        }
+        logger.debug("Retrieving {} by client ID: {}, page: {}, size: {}", Constants.TRANSPORT_CARGO_SERVICE, clientId, page, size);
+        try {
+            Map<String, Object> conditions = new HashMap<>();
+            conditions.put("client.id", clientId);
+            List<TransportCargoService> services = cargoServiceRepo.findByCriteria(conditions, "startingDate", true, page, size);
+            return services.stream().map(mapper::toViewDTO).collect(Collectors.toList());
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve {} by client ID: {}, cause: {}", Constants.TRANSPORT_CARGO_SERVICE, clientId, e.getMessage(), e);
+            throw e;
+        }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public BigDecimal getTotalRevenue() {
-        logger.debug("Calculating total cargo transport revenue");
-        List<TransportCargoService> transports = transportRepo.getAll(0, Integer.MAX_VALUE, "id", true);
-        BigDecimal revenue = transports.stream()
-                .map(TransportCargoService::getPrice)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        logger.info("Total cargo transport revenue: {}", revenue);
-        return revenue;
+    public List<TransportCargoServiceViewDTO> getByDriver(Long driverId, int page, int size) {
+        if (driverId == null) {
+            logger.error("Cannot retrieve {}: Driver ID is null", Constants.TRANSPORT_CARGO_SERVICE);
+            throw new IllegalArgumentException("Driver ID must not be null");
+        }
+        if (page < 0 || size <= 0) {
+            logger.debug("Invalid pagination for {} by driver ID: {}, page: {}, size: {}, returning empty list",
+                    Constants.TRANSPORT_CARGO_SERVICE, driverId, page, size);
+            return Collections.emptyList();
+        }
+        logger.debug("Retrieving {} by driver ID: {}, page: {}, size: {}", Constants.TRANSPORT_CARGO_SERVICE, driverId, page, size);
+        try {
+            Map<String, Object> conditions = new HashMap<>();
+            conditions.put("driver.id", driverId);
+            List<TransportCargoService> services = cargoServiceRepo.findByCriteria(conditions, "startingDate", true, page, size);
+            return services.stream().map(mapper::toViewDTO).collect(Collectors.toList());
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve {} by driver ID: {}, cause: {}", Constants.TRANSPORT_CARGO_SERVICE, driverId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<TransportCargoServiceViewDTO> getActiveServices(int page, int size) {
+        if (page < 0 || size <= 0) {
+            logger.debug("Invalid pagination for active {}: page: {}, size: {}, returning empty list",
+                    Constants.TRANSPORT_CARGO_SERVICE, page, size);
+            return Collections.emptyList();
+        }
+        logger.debug("Retrieving active {}: page={}, size={}", Constants.TRANSPORT_CARGO_SERVICE, page, size);
+        try {
+            Map<String, Object> conditions = new HashMap<>();
+            conditions.put("delivered", false);
+            List<TransportCargoService> services = cargoServiceRepo.findByCriteria(conditions, "startingDate", true, page, size);
+            return services.stream().map(mapper::toViewDTO).collect(Collectors.toList());
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve active {}, cause: {}", Constants.TRANSPORT_CARGO_SERVICE, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public Map<Long, BigDecimal> getTotalCargoWeightPerDriver() {
+        logger.debug("Retrieving total cargo weight per driver for {}", Constants.TRANSPORT_CARGO_SERVICE);
+        try {
+            // Fetch all services with driver relationship eagerly loaded
+            List<TransportCargoService> services = cargoServiceRepo.getAll(0, Integer.MAX_VALUE, "startingDate", true, "driver");
+            Map<Long, BigDecimal> weights = services.stream()
+                    .filter(s -> s.getDriver() != null && s.getWeightInKilograms() != null)
+                    .collect(Collectors.groupingBy(
+                            s -> s.getDriver().getId(),
+                            Collectors.reducing(BigDecimal.ZERO, TransportCargoService::getWeightInKilograms, BigDecimal::add)
+                    ));
+            logger.info("Retrieved total cargo weight for {} drivers", weights.size());
+            return weights;
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve total cargo weight per driver, cause: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 }

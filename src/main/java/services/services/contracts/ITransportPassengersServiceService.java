@@ -7,7 +7,6 @@ import services.data.dto.transportservices.TransportPassengersServiceUpdateDTO;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Service interface for managing {@link TransportPassengersService} entities with CRUD operations.
@@ -23,14 +22,6 @@ public interface ITransportPassengersServiceService {
     public TransportPassengersService create(TransportPassengersServiceCreateDTO dto);
 
     /**
-     * Creates a new passenger transport service asynchronously.
-     *
-     * @param dto the DTO containing data for the new passenger transport service
-     * @return a CompletableFuture resolving to the created TransportPassengersService entity
-     */
-    public CompletableFuture<TransportPassengersService> createAsync(TransportPassengersServiceCreateDTO dto);
-
-    /**
      * Updates an existing passenger transport service synchronously.
      *
      * @param dto the DTO containing updated data for the passenger transport service
@@ -39,27 +30,11 @@ public interface ITransportPassengersServiceService {
     public TransportPassengersService update(TransportPassengersServiceUpdateDTO dto);
 
     /**
-     * Updates an existing passenger transport service asynchronously.
-     *
-     * @param dto the DTO containing updated data for the passenger transport service
-     * @return a CompletableFuture resolving to the updated TransportPassengersService entity
-     */
-    public CompletableFuture<TransportPassengersService> updateAsync(TransportPassengersServiceUpdateDTO dto);
-
-    /**
      * Deletes a passenger transport service by its ID synchronously.
      *
      * @param id the ID of the passenger transport service to delete
      */
     public void delete(Long id);
-
-    /**
-     * Deletes a passenger transport service by its ID asynchronously.
-     *
-     * @param id the ID of the passenger transport service to delete
-     * @return a CompletableFuture indicating when the deletion is complete
-     */
-    public CompletableFuture<Void> deleteAsync(Long id);
 
     /**
      * Retrieves a passenger transport service by its ID synchronously.

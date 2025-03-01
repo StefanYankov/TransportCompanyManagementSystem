@@ -1,7 +1,11 @@
 package services.data.dto.vehicles;
 
+import data.common.ModelValidation;
+import jakarta.validation.constraints.NotNull;
+
 public class VanCreateDTO extends TransportPeopleVehicleCreateDTO {
 
+    @NotNull(message = ModelValidation.PASSENGER_OVERHEAD_STORAGE_CANNOT_BE_NULL)
     private Boolean hasPassengerOverheadStorage;
 
     public VanCreateDTO() {

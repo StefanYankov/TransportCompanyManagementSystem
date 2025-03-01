@@ -49,7 +49,7 @@ public class Client extends BaseModel {
         this.email = email;
     }
 
-    @OneToMany()
+    @OneToMany(mappedBy = "client")
     public Set<TransportService> getTransportService() {
         return transportService;
     }

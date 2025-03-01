@@ -25,19 +25,22 @@ import jakarta.validation.Validator;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import services.data.dto.transportservices.TransportPassengersServiceCreateDTO;
+import services.data.dto.transportservices.TransportPassengersServiceViewDTO;
 import services.data.mapping.mappers.DriverMapper;
+import services.data.mapping.mappers.QualificationMapper;
 import services.data.mapping.mappers.TransportCompanyMapper;
-import services.services.DriverService;
-import services.services.TransportCompanyService;
+//import services.services.DriverService;
+//import services.services.QualificationService;
+//import services.services.TransportCompanyService;
+import services.data.mapping.mappers.TransportPassengersServiceMapper;
 import services.services.contracts.IDriverService;
+import services.services.contracts.IQualificationService;
 import services.services.contracts.ITransportCompanyService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
@@ -45,26 +48,25 @@ public class Main {
     public static void main(String[] args) {
 
         // Initialize SessionFactory and ExecutorService
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
         SessionFactory sessionFactory = SessionFactoryUtil.getSessionFactory();
 
         // ## Initialize repositories
         IGenericRepository<Employee, Long> employeeRepository =
-                new GenericRepository<>(sessionFactory, executorService, Employee.class);
+                new GenericRepository<>(sessionFactory,  Employee.class);
         IGenericRepository<TransportCompany, Long> companyRepository =
-                new GenericRepository<>(sessionFactory, executorService, TransportCompany.class);
+                new GenericRepository<>(sessionFactory, TransportCompany.class);
         IGenericRepository<Qualification, Long> qualificationRepository =
-                new GenericRepository<>(sessionFactory, executorService, Qualification.class);
+                new GenericRepository<>(sessionFactory, Qualification.class);
         IGenericRepository<Vehicle, Long> vehicleRepository =
-                new GenericRepository<>(sessionFactory, executorService, Vehicle.class);
+                new GenericRepository<>(sessionFactory, Vehicle.class);
         IGenericRepository<TransportCargoService, Long> cargoServiceRepository =
-                new GenericRepository<>(sessionFactory, executorService, TransportCargoService.class);
+                new GenericRepository<>(sessionFactory, TransportCargoService.class);
         IGenericRepository<TransportPassengersService, Long> passengerServiceRepository =
-                new GenericRepository<>(sessionFactory, executorService, TransportPassengersService.class);
+                new GenericRepository<>(sessionFactory, TransportPassengersService.class);
         IGenericRepository<Driver, Long> driverRepository =
-                new GenericRepository<>(sessionFactory, executorService, Driver.class);
+                new GenericRepository<>(sessionFactory, Driver.class);
         IGenericRepository<Dispatcher, Long> dispatcherRepository =
-                new GenericRepository<>(sessionFactory, executorService, Dispatcher.class);
+                new GenericRepository<>(sessionFactory, Dispatcher.class);
 
         // ## Data seeding
         Gson gson = new GsonBuilder()
@@ -119,32 +121,40 @@ public class Main {
         Validator validator = factory.getValidator();
 
         // 2. Mappers
-        DriverMapper driveMapper = new DriverMapper();
+        DriverMapper driveMapper = new DriverMapper(companyRepository,dispatcherRepository,qualificationRepository);
         TransportCompanyMapper companyMapper = new TransportCompanyMapper();
-
+        QualificationMapper qualificationMapper = new QualificationMapper();
         // ## Initiate serviceLayer
+        TransportPassengersServiceMapper mapper = new TransportPassengersServiceMapper();
+        // Test mapping a CreateDTO to entity
+        TransportPassengersServiceCreateDTO createDto = new TransportPassengersServiceCreateDTO();
+        createDto.setTransportCompanyId(1L);
+        createDto.setVehicleId(2L);
+        createDto.setDestinationId(3L);
+        createDto.setDriverId(4L);
+        createDto.setClientId(5L);
+        createDto.setPrice(new java.math.BigDecimal("1000.00"));
+        createDto.setStartingDate(java.time.LocalDate.now());
+        createDto.setEndingDate(java.time.LocalDate.now().plusDays(1));
+        createDto.setNumberOfPassengers(6);
 
-        IDriverService driverService =
-                new DriverService(driverRepository,
-                        driveMapper, companyRepository, dispatcherRepository, cargoServiceRepository,
-                        passengerServiceRepository, qualificationRepository);
+        TransportPassengersService entity = mapper.toEntity(createDto);
+        System.out.println("Entity created: " + entity.getNumberOfPassengers());
 
-        ITransportCompanyService transportCompanyService =
-                new TransportCompanyService(companyRepository,
-                        cargoServiceRepository,
-                        passengerServiceRepository,
-                        companyMapper);
+        // Test mapping entity to ViewDTO
+        TransportPassengersServiceViewDTO viewDto = mapper.toViewDTO(entity);
+        System.out.println("View DTO created: " + viewDto.getNumberOfPassengers());
 
+        // If we get here without exceptions, ModelMapper is working standalone
+        System.out.println("ModelMapper test completed successfully!");
 
         // ## Initiate engine
-        IEngine engine = new ConsoleEngine(validator, transportCompanyService, driverService);
-        engine.start();
+       // IEngine engine = new ConsoleEngine(validator, transportCompanyService, driverService, qualificationService);
+        //engine.start();
 
 
         // Clean up resources (Hibernate session factory)
         SessionFactoryUtil.shutdown();
 
-        // Shutdown ExecutorService
-        executorService.shutdown();
     }
 }

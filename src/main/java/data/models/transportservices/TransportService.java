@@ -9,6 +9,8 @@ import data.models.employee.Driver;
 import data.models.vehicles.Vehicle;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,6 +37,7 @@ public abstract class TransportService extends BaseModel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     public Driver getDriver() {
         return driver;
     }
@@ -45,6 +48,7 @@ public abstract class TransportService extends BaseModel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     public Vehicle getVehicle() {
         return vehicle;
     }
@@ -55,6 +59,7 @@ public abstract class TransportService extends BaseModel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     public Client getClient() {
         return client;
     }
@@ -82,6 +87,7 @@ public abstract class TransportService extends BaseModel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "destination_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     public Destination getDestination() {
         return destination;
     }
@@ -91,7 +97,8 @@ public abstract class TransportService extends BaseModel {
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "transport_company_id", nullable = false)
+    @JoinColumn(name = "transport_company_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     public TransportCompany getTransportCompany() {
         return transportCompany;
     }

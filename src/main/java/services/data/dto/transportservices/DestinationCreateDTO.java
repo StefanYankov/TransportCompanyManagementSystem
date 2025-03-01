@@ -21,7 +21,6 @@ public class DestinationCreateDTO {
         this.endingLocation = endingLocation;
     }
 
-    // Getters and setters
     public String getStartingLocation() {
         return startingLocation;
     }

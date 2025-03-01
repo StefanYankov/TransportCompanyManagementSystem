@@ -52,7 +52,7 @@ public class TransportCompany extends BaseModel {
     }
 
     // One-to-many relationship with Employee
-    @OneToMany(mappedBy = "transportCompany", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "transportCompany")
     public Set<Employee> getEmployees() {
         return employees;
     }
@@ -62,7 +62,7 @@ public class TransportCompany extends BaseModel {
     }
 
     // One-to-many relationship with Vehicle
-    @OneToMany(mappedBy = "transportCompany", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "transportCompany")
     public Set<Vehicle> getVehicles() {
         return vehicles;
     }
@@ -72,7 +72,7 @@ public class TransportCompany extends BaseModel {
     }
 
     // One-to-many relationship with TransportService
-    @OneToMany(mappedBy = "transportCompany", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "transportCompany")
     public Set<TransportService> getTransportServices() {
         return transportServices;
     }

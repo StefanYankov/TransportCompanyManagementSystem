@@ -5,7 +5,6 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import services.data.dto.companies.TransportCompanyViewDTO;
 
 import java.math.BigDecimal;
 
@@ -23,14 +22,16 @@ public abstract class EmployeeCreateDTO {
     @DecimalMin(value = ModelValidation.MINIMUM_ALLOWED_SALARY, message = ModelValidation.SALARY_CANNOT_BE_A_NEGATIVE_VALUE)
     private BigDecimal salary;
 
-    private TransportCompanyViewDTO transportCompany;
+    @NotNull(message = ModelValidation.ID_REQUIRED)
+    private Long transportCompanyId;
+
     public EmployeeCreateDTO() {}
 
-    public EmployeeCreateDTO(String firstName, String familyName, BigDecimal salary, TransportCompanyViewDTO transportCompany) {
+    public EmployeeCreateDTO(String firstName, String familyName, BigDecimal salary, Long transportCompanyId) {
         this.firstName = firstName;
         this.familyName = familyName;
         this.salary = salary;
-        this.transportCompany = transportCompany;
+        this.transportCompanyId = transportCompanyId;
     }
 
 
@@ -58,11 +59,11 @@ public abstract class EmployeeCreateDTO {
         this.salary = salary;
     }
 
-    public TransportCompanyViewDTO getTransportCompany() {
-        return transportCompany;
+    public Long getTransportCompanyId() {
+        return transportCompanyId;
     }
 
-    public void setTransportCompany(TransportCompanyViewDTO transportCompany) {
-        this.transportCompany = transportCompany;
+    public void setTransportCompanyId(Long transportCompanyId) {
+        this.transportCompanyId = transportCompanyId;
     }
 }

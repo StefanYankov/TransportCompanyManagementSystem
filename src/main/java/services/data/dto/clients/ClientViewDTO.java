@@ -17,7 +17,6 @@ public class ClientViewDTO {
         this.email = email;
     }
 
-    // Getters and setters...
     public Long getId() {
         return id;
     }

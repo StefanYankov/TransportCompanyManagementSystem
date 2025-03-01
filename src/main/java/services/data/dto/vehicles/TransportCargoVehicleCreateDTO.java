@@ -8,11 +8,11 @@ public abstract class TransportCargoVehicleCreateDTO extends VehicleCreateDTO {
 
     @NotNull(message = ModelValidation.MAX_CARGO_CAPACITY_REQUIRED)
     @DecimalMin(value = ModelValidation.MIN_CARGO_CAPACITY, message = ModelValidation.INVALID_CARGO_MAX_CAPACITY)
-    private Double maxCargoCapacityKg;
+    private double  maxCargoCapacityKg;
 
     @NotNull(message = ModelValidation.CURRENT_CARGO_CAPACITY_REQUIRED)
     @DecimalMin(value = ModelValidation.MIN_CARGO_CAPACITY, message = ModelValidation.INVALID_CARGO_MAX_CAPACITY)
-    private Double currentCargoCapacityKg;
+    private double  currentCargoCapacityKg;
 
     @NotNull(message = ModelValidation.CARGO_TYPE_REQUIRED)
     private CargoType cargoType;
@@ -20,26 +20,26 @@ public abstract class TransportCargoVehicleCreateDTO extends VehicleCreateDTO {
     public TransportCargoVehicleCreateDTO() {
     }
 
-    public TransportCargoVehicleCreateDTO(String registrationPlate, Long transportCompanyId, Double maxCargoCapacityKg, Double currentCargoCapacityKg, CargoType cargoType) {
+    public TransportCargoVehicleCreateDTO(String registrationPlate, Long transportCompanyId, double  maxCargoCapacityKg, double  currentCargoCapacityKg, CargoType cargoType) {
         super(registrationPlate, transportCompanyId);
         this.maxCargoCapacityKg = maxCargoCapacityKg;
         this.currentCargoCapacityKg = currentCargoCapacityKg;
         this.cargoType = cargoType;
     }
 
-    public Double getMaxCargoCapacityKg() {
+    public double  getMaxCargoCapacityKg() {
         return maxCargoCapacityKg;
     }
 
-    public void setMaxCargoCapacityKg(Double maxCargoCapacityKg) {
+    public void setMaxCargoCapacityKg(double  maxCargoCapacityKg) {
         this.maxCargoCapacityKg = maxCargoCapacityKg;
     }
 
-    public Double getCurrentCargoCapacityKg() {
+    public double getCurrentCargoCapacityKg() {
         return currentCargoCapacityKg;
     }
 
-    public void setCurrentCargoCapacityKg(Double currentCargoCapacityKg) {
+    public void setCurrentCargoCapacityKg(double  currentCargoCapacityKg) {
         this.currentCargoCapacityKg = currentCargoCapacityKg;
     }
 

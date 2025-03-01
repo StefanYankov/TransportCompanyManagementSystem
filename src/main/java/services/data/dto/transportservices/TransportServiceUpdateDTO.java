@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public abstract class TransportServiceUpdateDTO {
+    private int version;
+
     @NotNull(message = ModelValidation.ID_REQUIRED)
     private Long id;
 
@@ -126,4 +128,7 @@ public abstract class TransportServiceUpdateDTO {
     public void setVehicleId(Long vehicleId) {
         this.vehicleId = vehicleId;
     }
+
+    public int getVersion() { return version; }
+    public void setVersion(int version) { this.version = version; }
 }

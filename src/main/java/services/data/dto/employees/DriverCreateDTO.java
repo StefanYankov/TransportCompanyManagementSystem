@@ -1,38 +1,35 @@
 package services.data.dto.employees;
 
-import services.data.dto.companies.TransportCompanyViewDTO;
-
 import java.math.BigDecimal;
 import java.util.Set;
 
 public class DriverCreateDTO extends EmployeeCreateDTO {
 
-    private DispatcherViewDTO dispatcher;
-
-    private Set<QualificationViewDTO> qualifications;
+    private Long dispatcherId;
+    private Set<Long> qualificationIds;
 
     public DriverCreateDTO() {
     }
 
-    public DriverCreateDTO(String firstName, String familyName, BigDecimal salary, TransportCompanyViewDTO transportCompany, DispatcherViewDTO dispatcher, Set<QualificationViewDTO> qualifications) {
-        super(firstName, familyName, salary, transportCompany);
-        this.dispatcher = dispatcher;
-        this.qualifications = qualifications;
+    public DriverCreateDTO(String firstName, String familyName, BigDecimal salary, Long transportCompanyId, Long dispatcherId, Set<Long> qualificationIds) {
+        super(firstName, familyName, salary, transportCompanyId);
+        this.dispatcherId = dispatcherId;
+        this.qualificationIds = qualificationIds;
     }
 
-    public DispatcherViewDTO getDispatcher() {
-        return dispatcher;
+    public Long getDispatcherId() {
+        return dispatcherId;
     }
 
-    public void setDispatcher(DispatcherViewDTO dispatcher) {
-        this.dispatcher = dispatcher;
+    public void setDispatcherId(Long dispatcherId) {
+        this.dispatcherId = dispatcherId;
     }
 
-    public Set<QualificationViewDTO> getQualifications() {
-        return qualifications;
+    public Set<Long> getQualificationIds() {
+        return qualificationIds;
     }
 
-    public void setQualifications(Set<QualificationViewDTO> qualifications) {
-        this.qualifications = qualifications;
+    public void setQualificationIds(Set<Long> qualificationIds) {
+        this.qualificationIds = qualificationIds;
     }
 }

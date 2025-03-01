@@ -9,7 +9,6 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 import data.repositories.IGenericRepository;
 import org.slf4j.Logger;
@@ -79,35 +78,6 @@ public class GenericSeeder<T, TKey> implements ISeeder<T, TKey> {
         }
     }
 
-
-    /** {@inheritDoc} */
-    @Override
-    public CompletableFuture<Void> seedAsync() {
-        logger.debug("Asynchronously checking if {} table is empty", entityType.getSimpleName());
-        return repository.getAllAsync(0, INITIAL_CHECK_SIZE, "id", true)
-                .thenCompose(entities -> {
-                    if (entities.isEmpty()) {
-                        logger.debug("No {} entities found, proceeding with async seeding", entityType.getSimpleName());
-                        return loadDataFromJsonAsync()
-                                .thenCompose(newEntities -> {
-                                    if (newEntities == null || newEntities.isEmpty()) {
-                                        logger.warn("No data to seed for {} in file {}", entityType.getSimpleName(), jsonFilePath);
-                                        return CompletableFuture.completedFuture(null);
-                                    }
-                                    return insertEntitiesAsync(newEntities);
-                                });
-                    } else {
-                        logger.debug("Skipping async seeding for {} - data exists", entityType.getSimpleName());
-                        return CompletableFuture.completedFuture(null);
-                    }
-                })
-                .exceptionally(throwable -> {
-                    logger.error("Async seeding failed for {} from {}", entityType.getSimpleName(), jsonFilePath, throwable);
-                    throw new RuntimeException("Async seeding failed: " + jsonFilePath, throwable);
-                });
-    }
-
-
     /**
      * Loads entity data from the specified JSON file synchronously.
      *
@@ -124,28 +94,6 @@ public class GenericSeeder<T, TKey> implements ISeeder<T, TKey> {
         Type listType = TypeToken.getParameterized(List.class, entityType).getType();
         return gson.fromJson(jsonContent, listType);
     }
-
-    /**
-     * Loads entity data from the specified JSON file asynchronously.
-     *
-     * @return a CompletableFuture containing the list of entities parsed from JSON
-     */
-    private CompletableFuture<List<T>> loadDataFromJsonAsync() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                File jsonFile = new File(jsonFilePath);
-                if (!jsonFile.exists() || !jsonFile.isFile()) {
-                    throw new IOException("JSON seed file not found or invalid: " + jsonFilePath);
-                }
-                String jsonContent = Files.readString(jsonFile.toPath());
-                Type listType = TypeToken.getParameterized(List.class, entityType).getType();
-                return gson.fromJson(jsonContent, listType);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to load JSON: " + jsonFilePath, e);
-            }
-        });
-    }
-
     /**
      * Inserts entities into the database synchronously.
      *
@@ -159,19 +107,4 @@ public class GenericSeeder<T, TKey> implements ISeeder<T, TKey> {
         }
     }
 
-    /**
-     * Inserts entities into the database asynchronously.
-     *
-     * @param newEntities the list of entities to insert
-     * @return a CompletableFuture indicating when insertion is complete
-     */
-    private CompletableFuture<Void> insertEntitiesAsync(List<T> newEntities) {
-        List<CompletableFuture<T>> futures = newEntities.stream()
-                .map(entity -> repository.createAsync(entity))
-                .toList();
-
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenRun(() -> logger.info("Seeded {} {} entities asynchronously from {}",
-                        newEntities.size(), entityType.getSimpleName(), jsonFilePath));
-    }
 }

@@ -6,7 +6,7 @@ import data.common.ModelValidation;
 
 public class QualificationUpdateDTO {
 
-    private long id;
+    private Long id;
 
     @NotBlank(message = ModelValidation.QUALIFICATION_NAME_NOT_BLANK)
     @Size(max = ModelValidation.QUALIFICATION_NAME_MAX_NAME_LENGTH, message = ModelValidation.QUALIFICATION_NAME_LENGTH_EXCEEDED)
@@ -19,17 +19,17 @@ public class QualificationUpdateDTO {
     public QualificationUpdateDTO() {
     }
 
-    public QualificationUpdateDTO(long id, String name, String description) {
+    public QualificationUpdateDTO(Long id, String name, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

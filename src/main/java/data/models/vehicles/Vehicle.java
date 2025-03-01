@@ -3,6 +3,8 @@ package data.models.vehicles;
 import data.common.BaseModel;
 import data.models.TransportCompany;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 
 @Entity
@@ -28,6 +30,7 @@ public abstract class Vehicle extends BaseModel {
 
     @ManyToOne
     @JoinColumn(name = "transport_company_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     public TransportCompany getTransportCompany() {
         return transportCompany;
     }

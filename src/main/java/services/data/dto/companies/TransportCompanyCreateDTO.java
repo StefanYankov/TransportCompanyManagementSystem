@@ -8,7 +8,7 @@ public class TransportCompanyCreateDTO {
 
     @NotBlank(message = ModelValidation.NAME_IS_REQUIRED)
     @Length(min = ModelValidation.MIN_NAME_LENGTH, max = ModelValidation.MAX_NAME_LENGTH)
-    private String companyName;
+    private String name;
 
     @NotBlank(message = ModelValidation.ADDRESS_IS_REQUIRED)
     @Length(min = ModelValidation.MIN_ADDRESS_LENGTH, max = ModelValidation.MAX_ADDRESS_LENGTH)
@@ -17,8 +17,8 @@ public class TransportCompanyCreateDTO {
     public TransportCompanyCreateDTO() {
     }
 
-    public TransportCompanyCreateDTO(String companyName, String address) {
-        this.companyName = companyName;
+    public TransportCompanyCreateDTO(String name, String address) {
+        this.name = name;
         this.address = address;
     }
 
@@ -30,11 +30,11 @@ public class TransportCompanyCreateDTO {
         this.address = address;
     }
 
-    public String getCompanyName() {
-        return companyName;
+    public String getName() {
+        return name;
     }
 
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
+    public void setName(String name) {
+        this.name = name;
     }
 }

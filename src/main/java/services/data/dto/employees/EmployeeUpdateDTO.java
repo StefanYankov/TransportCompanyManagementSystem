@@ -9,9 +9,12 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 
-public class EmployeeUpdateDTO {
+public abstract class EmployeeUpdateDTO {
 
-    private long id;
+    private int version;
+
+    @NotNull(message = ModelValidation.ID_REQUIRED)
+    private Long id;
 
     @NotBlank(message = ModelValidation.FIRST_NAME_IS_REQUIRED)
     @Size(min = ModelValidation.MIN_NAME_LENGTH, max = ModelValidation.MAX_NAME_LENGTH)
@@ -38,11 +41,11 @@ public class EmployeeUpdateDTO {
         this.transportCompanyId = transportCompanyId;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -77,4 +80,7 @@ public class EmployeeUpdateDTO {
     public void setTransportCompanyId(Long transportCompanyId) {
         this.transportCompanyId = transportCompanyId;
     }
+
+    public int getVersion() { return version; }
+    public void setVersion(int version) { this.version = version; }
 }

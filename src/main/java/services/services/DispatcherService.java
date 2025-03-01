@@ -1,137 +1,176 @@
 package services.services;
 
-import data.models.TransportCompany;
 import data.models.employee.Dispatcher;
+import data.models.employee.Driver;
 import data.repositories.IGenericRepository;
+import data.repositories.exceptions.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import services.common.Constants;
 import services.data.dto.employees.DispatcherCreateDTO;
 import services.data.dto.employees.DispatcherUpdateDTO;
+import services.data.dto.employees.DispatcherViewDTO;
+import services.data.dto.employees.DriverViewDTO;
 import services.data.mapping.mappers.DispatcherMapper;
+import services.data.mapping.mappers.DriverMapper;
 import services.services.contracts.IDispatcherService;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
- * Service implementation for managing {@link Dispatcher} entities.
+ * Service implementation for managing {@link Dispatcher} entities, exposing DTOs instead of entities.
  */
 public class DispatcherService implements IDispatcherService {
     private static final Logger logger = LoggerFactory.getLogger(DispatcherService.class);
     private final IGenericRepository<Dispatcher, Long> dispatcherRepo;
-    private final DispatcherMapper mapper;
-    private final IGenericRepository<TransportCompany, Long> companyRepo;
+    private final IGenericRepository<Driver, Long> driverRepo;
+    private final DispatcherMapper dispatcherMapper;
+    private final DriverMapper driverMapper;
 
-    public DispatcherService(IGenericRepository<Dispatcher, Long> dispatcherRepo, DispatcherMapper mapper,
-                             IGenericRepository<TransportCompany, Long> companyRepo) {
+    public DispatcherService(IGenericRepository<Dispatcher, Long> dispatcherRepo,
+                             IGenericRepository<Driver, Long> driverRepo,
+                             DispatcherMapper dispatcherMapper,
+                             DriverMapper driverMapper) {
         this.dispatcherRepo = dispatcherRepo;
-        this.mapper = mapper;
-        this.companyRepo = companyRepo;
+        this.driverRepo = driverRepo;
+        this.dispatcherMapper = dispatcherMapper;
+        this.driverMapper = driverMapper;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Dispatcher create(DispatcherCreateDTO dto) {
-        logger.debug("Creating dispatcher with DTO: {}", dto);
-        Dispatcher entity = mapper.toEntity(dto);
-        Dispatcher result = dispatcherRepo.create(entity);
-        logger.info("Dispatcher created with ID: {}", result.getId());
-        return result;
+    public DispatcherViewDTO create(DispatcherCreateDTO dto) {
+        if (dto == null) {
+            logger.error("Cannot create {}: DTO is null", Constants.DISPATCHER);
+            throw new IllegalArgumentException("DispatcherCreateDTO must not be null");
+        }
+        logger.debug("Creating {} with DTO: {}", Constants.DISPATCHER, dto);
+        try {
+            Dispatcher dispatcher = dispatcherMapper.toEntity(dto);
+            Dispatcher created = dispatcherRepo.create(dispatcher);
+            logger.info("{} created with ID: {}", Constants.DISPATCHER, created.getId());
+            return dispatcherMapper.toViewDTO(created);
+        } catch (RepositoryException e) {
+            logger.error("Failed to create {}: {} {}, cause: {}", Constants.DISPATCHER, dto.getFirstName(), dto.getFamilyName(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     /** {@inheritDoc} */
     @Override
-    public CompletableFuture<Dispatcher> createAsync(DispatcherCreateDTO dto) {
-        logger.debug("Async creating dispatcher with DTO: {}", dto);
-        Dispatcher entity = mapper.toEntity(dto);
-        return dispatcherRepo.createAsync(entity)
-                .whenComplete((result, throwable) -> {
-                    if (throwable != null) {
-                        logger.error("Failed to create dispatcher asynchronously", throwable);
-                    } else {
-                        logger.info("Dispatcher created asynchronously with ID: {}", result.getId());
-                    }
-                });
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Dispatcher update(DispatcherUpdateDTO dto) {
-        logger.debug("Updating dispatcher with DTO: {}", dto);
-        Dispatcher entity = mapper.toEntity(dto);
-        Dispatcher result = dispatcherRepo.update(entity);
-        logger.info("Dispatcher updated with ID: {}", result.getId());
-        return result;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public CompletableFuture<Dispatcher> updateAsync(DispatcherUpdateDTO dto) {
-        logger.debug("Async updating dispatcher with DTO: {}", dto);
-        Dispatcher entity = mapper.toEntity(dto);
-        return dispatcherRepo.updateAsync(entity)
-                .whenComplete((result, throwable) -> {
-                    if (throwable != null) {
-                        logger.error("Failed to update dispatcher asynchronously", throwable);
-                    } else {
-                        logger.info("Dispatcher updated asynchronously with ID: {}", result.getId());
-                    }
-                });
+    public DispatcherViewDTO update(DispatcherUpdateDTO dto) {
+        if (dto == null || dto.getId() == null) {
+            logger.error("Cannot update {}: DTO or ID is null", Constants.DISPATCHER);
+            throw new IllegalArgumentException("DispatcherUpdateDTO and ID must not be null");
+        }
+        logger.debug("Updating {} with DTO: {}", Constants.DISPATCHER, dto);
+        try {
+            Dispatcher existing = dispatcherRepo.getById(dto.getId(), "supervisedDrivers", "transportCompany")
+                    .orElseThrow(() -> new RepositoryException("Dispatcher not found with ID: " + dto.getId()));
+            dispatcherMapper.toEntity(dto, existing);
+            DispatcherViewDTO result = dispatcherRepo.updateAndMap(existing, dispatcherMapper::toViewDTO, null);
+            logger.info("{} updated with ID: {}", Constants.DISPATCHER, result.getId());
+            return result;
+        } catch (RepositoryException e) {
+            logger.error("Failed to update {} with ID: {}, cause: {}", Constants.DISPATCHER, dto.getId(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public void delete(Long id) {
-        logger.debug("Deleting dispatcher with ID: {}", id);
-        Dispatcher entity = dispatcherRepo.getById(id);
-        if (entity != null) {
+        if (id == null) {
+            logger.error("Cannot delete {}: ID is null", Constants.DISPATCHER);
+            throw new IllegalArgumentException("ID must not be null");
+        }
+        logger.debug("Deleting {} with ID: {}", Constants.DISPATCHER, id);
+        try {
+            Dispatcher entity = dispatcherRepo.getById(id)
+                    .orElseThrow(() -> new RepositoryException("Dispatcher not found with ID: " + id));
             dispatcherRepo.delete(entity);
-            logger.info("Dispatcher deleted with ID: {}", id);
-        } else {
-            logger.warn("No dispatcher found to delete with ID: {}", id);
+            logger.info("{} deleted with ID: {}", Constants.DISPATCHER, id);
+        } catch (RepositoryException e) {
+            logger.error("Failed to delete {} with ID: {}, cause: {}", Constants.DISPATCHER, id, e.getMessage(), e);
+            throw e;
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    public CompletableFuture<Void> deleteAsync(Long id) {
-        logger.debug("Async deleting dispatcher with ID: {}", id);
-        return dispatcherRepo.getByIdAsync(id)
-                .thenAccept(entity -> {
-                    if (entity != null) {
-                        dispatcherRepo.deleteAsync(entity)
-                                .whenComplete((v, throwable) -> {
-                                    if (throwable != null) {
-                                        logger.error("Failed to delete dispatcher asynchronously", throwable);
-                                    } else {
-                                        logger.info("Dispatcher deleted asynchronously with ID: {}", id);
-                                    }
-                                });
-                    } else {
-                        logger.warn("No dispatcher found to delete asynchronously with ID: {}", id);
-                    }
-                });
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Dispatcher getById(Long id) {
-        logger.debug("Retrieving dispatcher with ID: {}", id);
-        Dispatcher result = dispatcherRepo.getById(id);
-        if (result != null) {
-            logger.info("Dispatcher retrieved with ID: {}", id);
-        } else {
-            logger.warn("No dispatcher found with ID: {}", id);
+    public DispatcherViewDTO getById(Long id, String... fetchRelations) {
+        if (id == null) {
+            logger.error("Cannot retrieve {}: ID is null", Constants.DISPATCHER);
+            throw new IllegalArgumentException("ID must not be null");
         }
-        return result;
+        logger.debug("Retrieving {} with ID: {}, fetchRelations: {}", Constants.DISPATCHER, id, String.join(",", fetchRelations));
+        try {
+            Optional<Dispatcher> dispatcher = dispatcherRepo.getById(id, fetchRelations.length > 0 ? fetchRelations : new String[]{"supervisedDrivers"});
+            if (dispatcher.isEmpty()) {
+                logger.warn("No {} found with ID: {}", Constants.DISPATCHER, id);
+                return null;
+            }
+            logger.info("{} retrieved with ID: {}", Constants.DISPATCHER, id);
+            return dispatcherMapper.toViewDTO(dispatcher.get());
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve {} with ID: {}, cause: {}", Constants.DISPATCHER, id, e.getMessage(), e);
+            throw e;
+        }
     }
 
     /** {@inheritDoc} */
     @Override
-    public List<Dispatcher> getAll(int page, int size, String orderBy, boolean ascending) {
-        logger.debug("Retrieving all dispatchers, page: {}, size: {}, orderBy: {}, ascending: {}", page, size, orderBy, ascending);
-        List<Dispatcher> result = dispatcherRepo.getAll(page, size, orderBy, ascending);
-        logger.info("Retrieved {} dispatchers", result.size());
-        return result;
+    public List<DispatcherViewDTO> getAll(int page, int size, String orderBy, boolean ascending, String... fetchRelations) {
+        logger.debug("Retrieving all {}: page={}, size={}, orderBy={}, ascending={}, fetchRelations={}",
+                Constants.DISPATCHER, page, size, orderBy, ascending, String.join(",", fetchRelations));
+        try {
+            List<Dispatcher> dispatchers = dispatcherRepo.getAll(page, size, orderBy, ascending,
+                    fetchRelations.length > 0 ? fetchRelations : new String[]{"supervisedDrivers"});
+            List<DispatcherViewDTO> result = dispatchers.stream().map(dispatcherMapper::toViewDTO).collect(Collectors.toList());
+            logger.info("Retrieved {} {}", result.size(), Constants.DISPATCHER);
+            return result;
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve all {}, cause: {}", Constants.DISPATCHER, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<DriverViewDTO> getDriversByDispatcher(Long dispatcherId) {
+        if (dispatcherId == null) {
+            logger.error("Cannot retrieve drivers: Dispatcher ID is null");
+            throw new IllegalArgumentException("Dispatcher ID must not be null");
+        }
+        logger.debug("Retrieving drivers for dispatcher with ID: {}", dispatcherId);
+        try {
+            List<Driver> drivers = driverRepo.findWithJoin("dispatcher", "id", dispatcherId, "familyName", true, "dispatcher", "qualifications");
+            List<DriverViewDTO> result = drivers.stream().map(driverMapper::toViewDTO).collect(Collectors.toList());
+            logger.info("Retrieved {} drivers for dispatcher with ID: {}", result.size(), dispatcherId);
+            return result;
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve drivers for dispatcher with ID: {}, cause: {}", dispatcherId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<DispatcherViewDTO> getDispatchersSortedBySalary(int page, int size, boolean ascending, String... fetchRelations) {
+        logger.debug("Retrieving {} sorted by salary, page={}, size={}, ascending={}, fetchRelations={}",
+                Constants.DISPATCHER, page, size, ascending, String.join(",", fetchRelations));
+        try {
+            List<Dispatcher> dispatchers = dispatcherRepo.getAll(page, size, "salary", ascending,
+                    fetchRelations.length > 0 ? fetchRelations : new String[]{"supervisedDrivers"});
+            List<DispatcherViewDTO> result = dispatchers.stream().map(dispatcherMapper::toViewDTO).collect(Collectors.toList());
+            logger.info("Retrieved {} {} sorted by salary", result.size(), Constants.DISPATCHER);
+            return result;
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve {} sorted by salary, cause: {}", Constants.DISPATCHER, e.getMessage(), e);
+            throw e;
+        }
     }
 }

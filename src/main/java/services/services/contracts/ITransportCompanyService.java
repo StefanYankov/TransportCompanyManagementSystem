@@ -1,95 +1,122 @@
 package services.services.contracts;
 
-import data.models.TransportCompany;
-
+import data.repositories.exceptions.RepositoryException;
 import services.data.dto.companies.TransportCompanyCreateDTO;
 import services.data.dto.companies.TransportCompanyUpdateDTO;
 import services.data.dto.companies.TransportCompanyViewDTO;
+import services.data.dto.employees.EmployeeViewDTO;
+import services.data.dto.transportservices.TransportServiceViewDTO;
+import services.data.dto.vehicles.VehicleViewDTO;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
 
 /**
- * Service interface for managing {@link TransportCompany} entities with CRUD operations.
+ * Interface defining operations for managing {@link data.models.TransportCompany} entities in the transport system.
+ * Provides methods for CRUD operations, company-specific queries, and retrieval of related entities (employees, vehicles, transport services).
+ * All methods may throw {@link RepositoryException} as an unchecked exception, documented below.
  */
 public interface ITransportCompanyService {
 
     /**
-     * Creates a new transport company synchronously.
+     * Creates a new transport company based on the provided DTO.
      *
-     * @param dto the DTO containing data for the new transport company
-     * @return the created {@link TransportCompanyViewDTO} entity
+     * @param dto the data transfer object containing transport company creation details
+     * @return a view DTO representing the created transport company
+     * @throws IllegalArgumentException if the DTO is null
+     * @throws RepositoryException      if the transport company cannot be created (e.g., database errors)
      */
     public TransportCompanyViewDTO create(TransportCompanyCreateDTO dto);
 
-    public CompletableFuture<TransportCompanyViewDTO> createAsync(TransportCompanyCreateDTO dto);
-
     /**
-     * Updates an existing transport company synchronously.
+     * Updates an existing transport company based on the provided DTO.
      *
-     * @param dto the DTO containing updated data for the transport company
-     * @return the updated TransportCompany entity
+     * @param dto the data transfer object containing updated transport company details
+     * @return a view DTO representing the updated transport company
+     * @throws IllegalArgumentException if the DTO or its ID is null
+     * @throws RepositoryException      if the transport company is not found or update fails (e.g., database errors)
      */
     public TransportCompanyViewDTO update(TransportCompanyUpdateDTO dto);
 
     /**
-     * Updates an existing transport company asynchronously.
-     *
-     * @param dto the {@link CompletableFuture} DTO containing updated data for the transport company
-     * @return the updated TransportCompany entity
-     */
-    public CompletableFuture<TransportCompanyViewDTO> updateAsync(TransportCompanyUpdateDTO dto);
-
-    /**
-     * Deletes a transport company by its ID synchronously.
+     * Deletes a transport company by its ID.
      *
      * @param id the ID of the transport company to delete
+     * @throws IllegalArgumentException if the ID is null
+     * @throws RepositoryException      if deletion fails (e.g., transport company not found, database errors)
      */
     public void delete(Long id);
 
     /**
-     * Retrieves a transport company by its ID synchronously and returns its ViewDTO representation.
+     * Retrieves a transport company by its ID.
      *
      * @param id the ID of the transport company to retrieve
-     * @return the TransportCompanyViewDTO representing the transport company, or null if not found
+     * @return a view DTO of the transport company if found, null otherwise
+     * @throws IllegalArgumentException if the ID is null
+     * @throws RepositoryException      if retrieval fails (e.g., database errors)
      */
     public TransportCompanyViewDTO getById(Long id);
 
     /**
-     * Retrieves a list of all transport companies synchronously, with pagination and sorting,
-     * and returns the ViewDTO representations of the transport companies.
+     * Retrieves a paginated list of all transport companies, optionally filtered and sorted.
      *
      * @param page      the page number (0-based)
-     * @param size      the number of entities per page
-     * @param orderBy   the field to sort by (e.g., "name")
+     * @param size      the number of transport companies per page
+     * @param orderBy   the field to sort by (e.g., "companyName"); may be null for no sorting
      * @param ascending true for ascending order, false for descending
-     * @return a list of TransportCompanyViewDTO objects representing the transport companies
+     * @param filter    an optional filter string to match against companyName or address; may be null
+     * @return a list of transport company view DTOs
+     * @throws RepositoryException if the query fails (e.g., invalid orderBy field)
      */
-    public List<TransportCompanyViewDTO> getAll(int page, int size, String orderBy, boolean ascending);
+    public List<TransportCompanyViewDTO> getAll(int page, int size, String orderBy, boolean ascending, String filter);
+
+    /**
+     * Finds transport companies matching the given criteria, optionally sorted.
+     *
+     * @param conditions map of field names to values for filtering (e.g., {"companyName": "Fast Transport"})
+     * @param orderBy    the field to sort by; may be null for no sorting
+     * @param ascending  true for ascending order, false for descending
+     * @return a list of transport company view DTOs matching the criteria
+     * @throws RepositoryException if the query fails (e.g., invalid field name)
+     */
+    public List<TransportCompanyViewDTO> findByCriteria(Map<String, Object> conditions, String orderBy, boolean ascending);
+
+    /**
+     * Retrieves the employees associated with a specific transport company by its ID.
+     *
+     * @param companyId the ID of the transport company
+     * @return a list of employee view DTOs associated with the company
+     * @throws IllegalArgumentException if the company ID is null
+     * @throws RepositoryException      if the query fails (e.g., company not found, database errors)
+     */
+    public List<EmployeeViewDTO> getEmployeesByCompany(Long companyId);
+
+    /**
+     * Retrieves the vehicles associated with a specific transport company by its ID.
+     *
+     * @param companyId the ID of the transport company
+     * @return a list of vehicle view DTOs associated with the company
+     * @throws IllegalArgumentException if the company ID is null
+     * @throws RepositoryException      if the query fails (e.g., company not found, database errors)
+     */
+    public List<VehicleViewDTO> getVehiclesByCompany(Long companyId);
 
 
     /**
-     * Retrieves companies sorted by total revenue synchronously from their transport services.
+     * Retrieves the transport services associated with a specific transport company by its ID.
      *
-     * @param ascending true for ascending order, false for descending
-     * @return a list of TransportCompany entities sorted by revenue
+     * @param companyId the ID of the transport company
+     * @return a list of transport service view DTOs associated with the company
+     * @throws IllegalArgumentException if the company ID is null
+     * @throws RepositoryException      if the query fails (e.g., company not found, database errors)
      */
-    public List<TransportCompany> getCompaniesSortedByRevenue(boolean ascending);
+    public List<TransportServiceViewDTO> getTransportServicesByCompany(Long companyId);
 
     /**
-     * Calculates the total revenue for the company over a specified period synchronously.
+     * Retrieves the count of employees per transport company.
      *
-     * @param companyId the ID of the company
-     * @param startDate the start date of the period (inclusive)
-     * @param endDate the end date of the period (inclusive)
-     * @return the total revenue as a BigDecimal
+     * @return a map where keys are company IDs and values are the count of employees
+     * @throws RepositoryException if the query fails (e.g., database errors)
      */
-    public BigDecimal getRevenueForPeriod(Long companyId, LocalDate startDate, LocalDate endDate);
-
-
-    public CompletableFuture<Void> deleteAsync(Long id);
-    public CompletableFuture<TransportCompanyViewDTO> getByIdAsync(Long id);
-    public CompletableFuture<List<TransportCompanyViewDTO>> getAllAsync(int page, int size, String orderBy, boolean ascending);
+    public Map<Long, Integer> getEmployeeCountsPerCompany();
 }

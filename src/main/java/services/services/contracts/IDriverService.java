@@ -1,5 +1,6 @@
 package services.services.contracts;
 
+import data.repositories.exceptions.RepositoryException;
 import services.data.dto.employees.DriverCreateDTO;
 import services.data.dto.employees.DriverUpdateDTO;
 import services.data.dto.employees.DriverViewDTO;
@@ -7,107 +8,149 @@ import services.data.dto.employees.DriverViewDTO;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 /**
- * Service interface for managing driver-related operations with DTO-based inputs and outputs.
+ * Interface defining operations for managing Driver entities in the transport system.
+ * Provides methods for CRUD operations, driver-specific queries, and revenue calculations.
+ * All methods may throw {@link RepositoryException} as an unchecked exception, documented below.
  */
 public interface IDriverService {
 
     /**
-     * Creates a new driver synchronously.
+     * Creates a new driver based on the provided DTO.
      *
-     * @param dto the DTO containing data for the new driver
-     * @return the created driver as a DriverViewDTO
+     * @param dto the data transfer object containing driver creation details
+     * @return a view DTO representing the created driver
+     * @throws IllegalArgumentException if the DTO is null
+     * @throws RepositoryException if the driver cannot be created (e.g., null DTO, database errors)
      */
-    public DriverViewDTO create(DriverCreateDTO dto);
+    DriverViewDTO create(DriverCreateDTO dto);
 
     /**
-     * Creates a new driver asynchronously.
+     * Updates an existing driver based on the provided DTO.
      *
-     * @param dto the DTO containing data for the new driver
-     * @return a CompletableFuture resolving to the created driver as a DriverViewDTO
+     * @param dto the data transfer object containing updated driver details
+     * @return a view DTO representing the updated driver
+     * @throws IllegalArgumentException if the DTO or its ID is null
+     * @throws RepositoryException if the driver is not found or update fails (e.g., optimistic locking conflict)
      */
-    public CompletableFuture<DriverViewDTO> createAsync(DriverCreateDTO dto);
+    DriverViewDTO update(DriverUpdateDTO dto);
 
     /**
-     * Updates an existing driver synchronously.
-     *
-     * @param dto the DTO containing updated data for the driver
-     * @return the updated driver as a DriverViewDTO
-     */
-    public DriverViewDTO update(DriverUpdateDTO dto);
-
-    /**
-     * Updates an existing driver asynchronously.
-     *
-     * @param dto the DTO containing updated data for the driver
-     * @return a CompletableFuture resolving to the updated driver as a DriverViewDTO
-     */
-    public CompletableFuture<DriverViewDTO> updateAsync(DriverUpdateDTO dto);
-
-    /**
-     * Deletes a driver by its ID synchronously.
+     * Deletes a driver by their ID.
      *
      * @param id the ID of the driver to delete
+     * @throws IllegalArgumentException if the ID is null
+     * @throws RepositoryException if deletion fails (e.g., driver not found, database errors)
      */
-    public void delete(Long id);
+    void delete(Long id);
 
     /**
-     * Deletes a driver by its ID asynchronously.
-     *
-     * @param id the ID of the driver to delete
-     * @return a CompletableFuture indicating when the deletion is complete
-     */
-    public CompletableFuture<Void> deleteAsync(Long id);
-
-    /**
-     * Retrieves a driver by its ID synchronously.
+     * Retrieves a driver by their ID, optionally fetching specified relationships.
      *
      * @param id the ID of the driver to retrieve
-     * @return the driver as a DriverViewDTO, or null if not found
+     * @param fetchRelations the relationships to eagerly fetch (e.g., "qualifications"); may be null or empty
+     * @return a view DTO of the driver if found, null otherwise
+     * @throws IllegalArgumentException if the ID is null
+     * @throws RepositoryException if retrieval fails (e.g., database errors)
      */
-    public DriverViewDTO getById(Long id);
+    DriverViewDTO getById(Long id, String... fetchRelations);
 
     /**
-     * Retrieves a list of all drivers synchronously with pagination and sorting.
+     * Retrieves a paginated list of all drivers, optionally sorted and with specified relationships fetched.
      *
-     * @param page      the page number (0-based)
-     * @param size      the number of entities per page
-     * @param orderBy   the field to sort by (e.g., "familyName")
+     * @param page the page number (0-based)
+     * @param size the number of drivers per page
+     * @param orderBy the field to sort by (e.g., "familyName"); may be null for no sorting
      * @param ascending true for ascending order, false for descending
-     * @return a list of drivers as DriverViewDTOs
+     * @param fetchRelations the relationships to eagerly fetch (e.g., "qualifications"); may be null or empty
+     * @return a list of driver view DTOs
+     * @throws RepositoryException if the query fails (e.g., invalid orderBy field)
      */
-    public List<DriverViewDTO> getAll(int page, int size, String orderBy, boolean ascending);
+    List<DriverViewDTO> getAll(int page, int size, String orderBy, boolean ascending, String... fetchRelations);
 
     /**
-     * Retrieves drivers filtered by a specific qualification synchronously.
+     * Retrieves drivers with a specific qualification, fetching qualifications eagerly.
      *
      * @param qualificationName the name of the qualification to filter by
-     * @return a list of drivers as DriverViewDTOs with the specified qualification
+     * @return a list of driver view DTOs with the specified qualification
+     * @throws RepositoryException if the query fails (e.g., invalid qualification name)
      */
     List<DriverViewDTO> getDriversByQualification(String qualificationName);
 
     /**
-     * Retrieves drivers sorted by salary synchronously.
+     * Retrieves all drivers sorted by their salary, optionally fetching relationships.
      *
      * @param ascending true for ascending order, false for descending
-     * @return a list of drivers as DriverViewDTOs sorted by salary
+     * @param fetchRelations the relationships to eagerly fetch (e.g., "qualifications"); may be null or empty
+     * @return a list of driver view DTOs sorted by salary
+     * @throws RepositoryException if the query fails
      */
-    public List<DriverViewDTO> getDriversSortedBySalary(boolean ascending);
+    List<DriverViewDTO> getDriversSortedBySalary(boolean ascending, String... fetchRelations);
 
     /**
-     * Retrieves a count of transports performed by each driver synchronously.
+     * Retrieves a map of driver IDs to their total transport service counts.
      *
-     * @return a map of driver IDs to their transport counts
+     * @return a map where keys are driver IDs and values are the number of transport services
+     * @throws RepositoryException if the query fails
      */
-    public Map<Long, Integer> getDriverTransportCounts();
+    Map<Long, Integer> getDriverTransportCounts();
 
     /**
-     * Retrieves the total revenue generated by a specific driver synchronously.
+     * Calculates the total revenue generated by a driver based on their transport services.
      *
      * @param driverId the ID of the driver
      * @return the total revenue as a BigDecimal
+     * @throws RepositoryException if the calculation fails (e.g., database errors)
      */
-    public BigDecimal getRevenueByDriver(Long driverId);
+    BigDecimal getRevenueByDriver(Long driverId);
+
+    /**
+     * Retrieves a map of driver IDs to the number of trips (transport services) they have completed, with pagination.
+     *
+     * @param orderByCount true to sort by trip count, false to sort by driver ID
+     * @param ascending true for ascending order, false for descending order
+     * @param page the page number (0-based) for pagination
+     * @param size the number of drivers per page
+     * @return a map where keys are driver IDs and values are trip counts
+     * @throws RepositoryException if the query fails
+     */
+    Map<Long, Integer> getDriverTripCounts(boolean orderByCount, boolean ascending, int page, int size);
+
+    /**
+     * Retrieves drivers supervised by a specific dispatcher, fetching dispatcher and qualifications eagerly.
+     *
+     * @param dispatcherId the ID of the dispatcher
+     * @return a list of driver view DTOs supervised by the dispatcher
+     * @throws IllegalArgumentException if the dispatcher ID is null
+     * @throws RepositoryException if the query fails (e.g., dispatcher not found)
+     */
+    List<DriverViewDTO> getDriversByDispatcher(Long dispatcherId);
+
+    /**
+     * Retrieves a paginated list of drivers belonging to a specific transport company, optionally fetching relationships.
+     *
+     * @param companyId the ID of the transport company
+     * @param page the page number (0-based) for pagination
+     * @param size the number of drivers per page
+     * @param orderBy the field to sort by (e.g., "familyName"); may be null for no sorting
+     * @param ascending true for ascending order, false for descending
+     * @param fetchRelations the relationships to eagerly fetch (e.g., "qualifications"); may be null or empty
+     * @return a list of driver view DTOs
+     * @throws IllegalArgumentException if the company ID is null
+     * @throws RepositoryException if the query fails
+     */
+    List<DriverViewDTO> getDriversByCompany(Long companyId, int page, int size, String orderBy, boolean ascending, String... fetchRelations);
+
+    /**
+     * Retrieves a paginated list of all transport services (cargo and passenger) associated with a driver.
+     *
+     * @param driverId The ID of the driver.
+     * @param page     The page number (0-based).
+     * @param size     The number of items per page.
+     * @return A list of transport service view DTOs (mix of TransportCargoServiceViewDTO and TransportPassengersServiceViewDTO).
+     * @throws IllegalArgumentException if the driver ID is null.
+     * @throws RepositoryException      if there’s a database error.
+     */
+    public List<Object> getTransportServicesForDriver(Long driverId, int page, int size);
 }

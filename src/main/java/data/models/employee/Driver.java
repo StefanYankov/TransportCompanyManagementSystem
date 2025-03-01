@@ -2,6 +2,8 @@ package data.models.employee;
 
 import data.models.transportservices.TransportService;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,6 +18,7 @@ public class Driver extends Employee {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dispatcher_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     public Dispatcher getDispatcher() {
         return dispatcher;
     }

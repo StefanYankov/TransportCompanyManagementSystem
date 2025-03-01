@@ -1,11 +1,7 @@
 package services.data.dto.employees;
 
-import data.models.TransportCompany;
-import services.data.dto.companies.TransportCompanyViewDTO;
-
 import java.math.BigDecimal;
 import java.util.Set;
-
 
 public class DispatcherCreateDTO extends EmployeeCreateDTO {
 
@@ -18,8 +14,8 @@ public class DispatcherCreateDTO extends EmployeeCreateDTO {
         this.supervisedDriverIds = supervisedDriverIds;
     }
 
-    public DispatcherCreateDTO(String firstName, String familyName, BigDecimal salary, TransportCompanyViewDTO transportCompany, Set<Long> supervisedDriverIds) {
-        super(firstName, familyName, salary,  transportCompany);
+    public DispatcherCreateDTO(String firstName, String familyName, BigDecimal salary, Long transportCompanyId, Set<Long> supervisedDriverIds) {
+        super(firstName, familyName, salary,  transportCompanyId);
         this.supervisedDriverIds = supervisedDriverIds;
     }
 
