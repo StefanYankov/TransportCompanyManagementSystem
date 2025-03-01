@@ -214,6 +214,16 @@ public class ClientServiceTests {
     }
 
     @Test
+    void create_DuplicateEmail_ShouldThrowRepositoryException() {
+        ClientCreateDTO dto1 = new ClientCreateDTO("John Doe", "1234567890", "duplicate@example.com");
+        service.create(dto1);
+
+        ClientCreateDTO dto2 = new ClientCreateDTO("Jane Smith", "0987654321", "duplicate@example.com");
+        assertThrows(RepositoryException.class, () -> service.create(dto2),
+                "Creating a second client with the same email should throw RepositoryException due to unique constraint");
+    }
+
+    @Test
     void update_NullDTO_ShouldThrowIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> service.update(null));
     }
@@ -247,6 +257,17 @@ public class ClientServiceTests {
 
         List<ClientViewDTO> result = service.getAll(0, Integer.MAX_VALUE, "name", true, "");
         assertEquals(2, result.size());
+    }
+
+    @Test
+    void create_TelephoneLengthBoundaries_ShouldPersistCorrectly() {
+        ClientCreateDTO validDto = new ClientCreateDTO("John Doe", "1234567890", "john.doe@example.com");
+        ClientViewDTO validResult = service.create(validDto);
+        assertEquals("1234567890", validResult.getTelephone(), "Exact length telephone should persist");
+
+        ClientCreateDTO longDto = new ClientCreateDTO("Jane Smith", "123456789012345", "jane.smith@example.com");
+        assertThrows(Exception.class, () -> service.create(longDto),
+                "Telephone exceeding max length should fail validation or persistence");
     }
 
     @Test

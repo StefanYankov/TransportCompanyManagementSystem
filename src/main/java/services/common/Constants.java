@@ -11,6 +11,7 @@ public class Constants {
     public static final String TRUCK = "Truck";
     public static final String VAN = "Van";
     public static final String TRANSPORT_CARGO_SERVICE = "Transport Cargo Service";
+    public static final String TRANSPORT_PASSENGERS_SERVICE = "Transport Passenger Service";
 
 
     private Constants() {

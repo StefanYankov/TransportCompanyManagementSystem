@@ -6,11 +6,13 @@ import data.common.seeding.GenericSeeder;
 import data.common.seeding.ISeeder;
 import data.common.seeding.LocalDateAdapter;
 import data.common.seeding.LocalDateTimeAdapter;
+import data.models.Client;
 import data.models.TransportCompany;
 import data.models.employee.Dispatcher;
 import data.models.employee.Driver;
 import data.models.employee.Qualification;
 import data.models.employee.Employee;
+import data.models.transportservices.Destination;
 import data.models.transportservices.TransportCargoService;
 
 import data.models.transportservices.TransportPassengersService;
@@ -67,6 +69,10 @@ public class Main {
                 new GenericRepository<>(sessionFactory, Driver.class);
         IGenericRepository<Dispatcher, Long> dispatcherRepository =
                 new GenericRepository<>(sessionFactory, Dispatcher.class);
+        IGenericRepository<Client, Long> clientRepository
+                = new GenericRepository<>(sessionFactory, Client.class);
+        IGenericRepository<Destination, Long> destinationRepository =
+                new GenericRepository<>(sessionFactory, Destination.class);
 
         // ## Data seeding
         Gson gson = new GsonBuilder()
@@ -124,8 +130,9 @@ public class Main {
         DriverMapper driveMapper = new DriverMapper(companyRepository,dispatcherRepository,qualificationRepository);
         TransportCompanyMapper companyMapper = new TransportCompanyMapper();
         QualificationMapper qualificationMapper = new QualificationMapper();
+        TransportPassengersServiceMapper mapper = new TransportPassengersServiceMapper(companyRepository, clientRepository, driverRepository, vehicleRepository, destinationRepository);
+
         // ## Initiate serviceLayer
-        TransportPassengersServiceMapper mapper = new TransportPassengersServiceMapper();
         // Test mapping a CreateDTO to entity
         TransportPassengersServiceCreateDTO createDto = new TransportPassengersServiceCreateDTO();
         createDto.setTransportCompanyId(1L);

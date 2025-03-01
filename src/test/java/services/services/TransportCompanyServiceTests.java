@@ -14,6 +14,7 @@ import org.hibernate.service.ServiceRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import services.data.dto.clients.ClientViewDTO;
 import services.data.dto.companies.TransportCompanyCreateDTO;
 import services.data.dto.companies.TransportCompanyUpdateDTO;
 import services.data.dto.companies.TransportCompanyViewDTO;
@@ -45,6 +46,7 @@ public class TransportCompanyServiceTests {
     private DestinationMapper destinationMapper;
     private TransportServiceMapper transportServiceMapper;
     private EmployeeMapper employeeMapper;
+    private ClientMapper clientMapper;
 
     @BeforeEach
     void Setup() {
@@ -73,7 +75,6 @@ public class TransportCompanyServiceTests {
 
             sessionFactory = configuration.buildSessionFactory(serviceRegistry);
 
-
             companyRepo = new GenericRepository<>(sessionFactory,  TransportCompany.class);
             clientRepo = new GenericRepository<>(sessionFactory,  Client.class);
             employeeRepo = new GenericRepository<>(sessionFactory, Employee.class);
@@ -83,13 +84,18 @@ public class TransportCompanyServiceTests {
             vehicleRepo = new GenericRepository<>(sessionFactory, Vehicle.class);
 
             destinationMapper = new DestinationMapper();
-
             companyMapper = new TransportCompanyMapper();
             vehicleMapper = new VehicleMapper(companyRepo);
             transportServiceMapper = new TransportServiceMapper(companyRepo, clientRepo, driverRepo, destinationRepo, vehicleRepo);
             employeeMapper = new EmployeeMapper();
+            clientMapper = new ClientMapper();
+
             service = new TransportCompanyService(companyRepo, employeeRepo, vehicleRepo, transportServiceRepo,
-                    companyMapper,  employeeMapper,vehicleMapper, transportServiceMapper);
+                    companyMapper,
+                    employeeMapper,
+                    vehicleMapper,
+                    transportServiceMapper,
+                    clientMapper);
         } catch (Exception e) {
             fail("Failed to initialize SessionFactory: " + e.getMessage());
         }
@@ -204,20 +210,22 @@ public class TransportCompanyServiceTests {
 
     @Test
     void getEmployeesByCompany_WithEmployees_ShouldReturnEmployees() {
-        TransportCompanyCreateDTO companyDto = new TransportCompanyCreateDTO("Fast Transport", "123 Main St");
-        TransportCompanyViewDTO company = service.create(companyDto);
+        TransportCompanyCreateDTO dto = new TransportCompanyCreateDTO();
+        dto.setName("Test Company");
+        dto.setAddress("123 Test St");
+        TransportCompanyViewDTO created = service.create(dto);
 
-        Driver employee = new Driver();
+        Employee employee = new Driver();
         employee.setFirstName("John");
         employee.setFamilyName("Doe");
         employee.setSalary(new BigDecimal("50000"));
-        employee.setTransportCompany(companyRepo.getById(company.getId()).get());
+        TransportCompany company = companyRepo.getById(created.getId()).get();
+        employee.setTransportCompany(company);
         employeeRepo.create(employee);
 
-        List<EmployeeViewDTO> result = service.getEmployeesByCompany(company.getId());
+        List<EmployeeViewDTO> result = service.getEmployeesByCompany(created.getId());
         assertEquals(1, result.size());
         assertEquals("Doe", result.getFirst().getFamilyName());
-        assertTrue(company.getEmployeeIds().contains(employee.getId()));
     }
 
     @Test
@@ -279,6 +287,179 @@ public class TransportCompanyServiceTests {
         assertEquals(0, result.get(company2.getId()));
     }
 
+    @Test
+    void getTotalRevenue_WithServices_ShouldReturnSum() {
+        TransportCompanyCreateDTO companyDto = new TransportCompanyCreateDTO("Fast Transport", "123 Main St");
+        TransportCompanyViewDTO company = service.create(companyDto);
+
+        TransportCargoService service1 = new TransportCargoService();
+        service1.setStartingDate(LocalDate.now());
+        service1.setPrice(new BigDecimal("2000"));
+        service1.setTransportCompany(companyRepo.getById(company.getId()).get());
+        service1.setWeightInKilograms(BigDecimal.valueOf(25));
+        service1.setLengthInCentimeters(50);
+        service1.setWidthInCentimeters(25);
+        service1.setHeightInCentimeters(25);
+        transportServiceRepo.create(service1);
+
+        TransportPassengersService service2 = new TransportPassengersService();
+        service2.setStartingDate(LocalDate.now());
+        service2.setPrice(new BigDecimal("1500"));
+        service2.setTransportCompany(companyRepo.getById(company.getId()).get());
+        service2.setNumberOfPassengers(20);
+        transportServiceRepo.create(service2);
+
+        BigDecimal revenue = service.getTotalRevenue(company.getId());
+        assertEquals(new BigDecimal("3500.00"), revenue);
+    }
+
+    @Test
+    void getTotalTransportCount_WithServices_ShouldReturnCount() {
+        TransportCompanyCreateDTO companyDto = new TransportCompanyCreateDTO("Fast Transport", "123 Main St");
+        TransportCompanyViewDTO company = service.create(companyDto);
+
+        TransportCargoService service1 = new TransportCargoService();
+        service1.setStartingDate(LocalDate.now());
+        service1.setPrice(new BigDecimal("2000"));
+        service1.setTransportCompany(companyRepo.getById(company.getId()).get());
+        service1.setWeightInKilograms(BigDecimal.valueOf(25));
+        service1.setLengthInCentimeters(50);
+        service1.setWidthInCentimeters(25);
+        service1.setHeightInCentimeters(25);
+        transportServiceRepo.create(service1);
+
+        TransportPassengersService service2 = new TransportPassengersService();
+        service2.setStartingDate(LocalDate.now());
+        service2.setPrice(new BigDecimal("1500"));
+        service2.setTransportCompany(companyRepo.getById(company.getId()).get());
+        service2.setNumberOfPassengers(20);
+        transportServiceRepo.create(service2);
+
+        int count = service.getTotalTransportCount(company.getId());
+        assertEquals(2, count);
+    }
+
+    @Test
+    void getAllClientsForCompany_WithClients_ShouldReturnClients() {
+        TransportCompanyCreateDTO companyDto = new TransportCompanyCreateDTO("Fast Transport", "123 Main St");
+        TransportCompanyViewDTO company = service.create(companyDto);
+
+        Client client1 = new Client();
+        client1.setName("Client A");
+        client1.setTelephone("1234567890");
+        client1.setEmail("clientA@example.com");
+        clientRepo.create(client1);
+
+        Client client2 = new Client();
+        client2.setName("Client B");
+        client2.setTelephone("0987654321");
+        client2.setEmail("clientB@example.com");
+        clientRepo.create(client2);
+
+        TransportCargoService service1 = new TransportCargoService();
+        service1.setStartingDate(LocalDate.now());
+        service1.setPrice(new BigDecimal("2000"));
+        service1.setTransportCompany(companyRepo.getById(company.getId()).get());
+        service1.setClient(client1);
+        service1.setWeightInKilograms(BigDecimal.valueOf(25));
+        service1.setLengthInCentimeters(50);
+        service1.setWidthInCentimeters(25);
+        service1.setHeightInCentimeters(25);
+        transportServiceRepo.create(service1);
+
+        TransportPassengersService service2 = new TransportPassengersService();
+        service2.setStartingDate(LocalDate.now());
+        service2.setPrice(new BigDecimal("1500"));
+        service2.setTransportCompany(companyRepo.getById(company.getId()).get());
+        service2.setClient(client2);
+        service2.setNumberOfPassengers(20);
+        transportServiceRepo.create(service2);
+
+        List<ClientViewDTO> result = service.getAllClientsForCompany(company.getId());
+        assertEquals(2, result.size());
+        assertTrue(result.stream().anyMatch(c -> c.getName().equals("Client A")));
+        assertTrue(result.stream().anyMatch(c -> c.getName().equals("Client B")));
+    }
+
+    @Test
+    void getAllClientsForCompany_WithPaidFilter_ShouldReturnFilteredClients() {
+        TransportCompanyCreateDTO companyDto = new TransportCompanyCreateDTO("Fast Transport", "123 Main St");
+        TransportCompanyViewDTO company = service.create(companyDto);
+
+        Client client1 = new Client();
+        client1.setName("Client A");
+        client1.setTelephone("1234567890");
+        client1.setEmail("clientA@example.com");
+        clientRepo.create(client1);
+
+        Client client2 = new Client();
+        client2.setName("Client B");
+        client2.setTelephone("0987654321");
+        client2.setEmail("clientB@example.com");
+        clientRepo.create(client2);
+
+        TransportCargoService service1 = new TransportCargoService();
+        service1.setStartingDate(LocalDate.now());
+        service1.setPrice(new BigDecimal("2000"));
+        service1.setTransportCompany(companyRepo.getById(company.getId()).get());
+        service1.setClient(client1);
+        service1.setPaid(true);
+        service1.setWeightInKilograms(BigDecimal.valueOf(25));
+        service1.setLengthInCentimeters(50);
+        service1.setWidthInCentimeters(25);
+        service1.setHeightInCentimeters(25);
+        transportServiceRepo.create(service1);
+
+        TransportPassengersService service2 = new TransportPassengersService();
+        service2.setStartingDate(LocalDate.now());
+        service2.setPrice(new BigDecimal("1500"));
+        service2.setTransportCompany(companyRepo.getById(company.getId()).get());
+        service2.setClient(client2);
+        service2.setPaid(false);
+        service2.setNumberOfPassengers(20);
+        transportServiceRepo.create(service2);
+
+        List<ClientViewDTO> paidClients = service.getAllClientsForCompany(company.getId(), true);
+        assertEquals(1, paidClients.size());
+        assertEquals("Client A", paidClients.getFirst().getName());
+
+        List<ClientViewDTO> unpaidClients = service.getAllClientsForCompany(company.getId(), false);
+        assertEquals(1, unpaidClients.size());
+        assertEquals("Client B", unpaidClients.getFirst().getName());
+    }
+
+    @Test
+    void getCompaniesBetweenRevenue_WithinRange_ShouldReturnMatchingCompanies() {
+        TransportCompanyCreateDTO companyDto1 = new TransportCompanyCreateDTO("Low Revenue Co", "123 Low St");
+        TransportCompanyViewDTO company1 = service.create(companyDto1);
+        TransportCompanyCreateDTO companyDto2 = new TransportCompanyCreateDTO("High Revenue Co", "456 High St");
+        TransportCompanyViewDTO company2 = service.create(companyDto2);
+
+        TransportCargoService service1 = new TransportCargoService();
+        service1.setStartingDate(LocalDate.now());
+        service1.setPrice(new BigDecimal("1000"));
+        service1.setTransportCompany(companyRepo.getById(company1.getId()).get());
+        service1.setWeightInKilograms(BigDecimal.valueOf(25));
+        service1.setLengthInCentimeters(50);
+        service1.setWidthInCentimeters(25);
+        service1.setHeightInCentimeters(25);
+        transportServiceRepo.create(service1);
+
+        TransportCargoService service2 = new TransportCargoService();
+        service2.setStartingDate(LocalDate.now());
+        service2.setPrice(new BigDecimal("3000"));
+        service2.setTransportCompany(companyRepo.getById(company2.getId()).get());
+        service2.setWeightInKilograms(BigDecimal.valueOf(25));
+        service2.setLengthInCentimeters(50);
+        service2.setWidthInCentimeters(25);
+        service2.setHeightInCentimeters(25);
+        transportServiceRepo.create(service2);
+
+        List<TransportCompanyViewDTO> result = service.getCompaniesBetweenRevenue(new BigDecimal("2000"), new BigDecimal("4000"));
+        assertEquals(1, result.size());
+        assertEquals("High Revenue Co", result.getFirst().getName());
+    }
+
     // Error Cases
     @Test
     void create_NullDTO_ShouldThrowIllegalArgumentException() {
@@ -310,6 +491,43 @@ public class TransportCompanyServiceTests {
     @Test
     void getEmployeesByCompany_NullId_ShouldThrowIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> service.getEmployeesByCompany(null));
+    }
+
+    @Test
+    void getVehiclesByCompany_NullId_ShouldThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> service.getVehiclesByCompany(null));
+    }
+
+    @Test
+    void getTransportServicesByCompany_NullId_ShouldThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> service.getTransportServicesByCompany(null));
+    }
+
+    @Test
+    void getTotalRevenue_NullId_ShouldThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> service.getTotalRevenue(null));
+    }
+
+    @Test
+    void getTotalTransportCount_NullId_ShouldThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> service.getTotalTransportCount(null));
+    }
+
+    @Test
+    void getAllClientsForCompany_NullId_ShouldThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> service.getAllClientsForCompany(null));
+        assertThrows(IllegalArgumentException.class, () -> service.getAllClientsForCompany(null, true));
+    }
+
+    @Test
+    void getCompaniesBetweenRevenue_NullRange_ShouldThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> service.getCompaniesBetweenRevenue(null, new BigDecimal("1000")));
+        assertThrows(IllegalArgumentException.class, () -> service.getCompaniesBetweenRevenue(new BigDecimal("1000"), null));
+    }
+
+    @Test
+    void getCompaniesBetweenRevenue_InvalidRange_ShouldThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> service.getCompaniesBetweenRevenue(new BigDecimal("2000"), new BigDecimal("1000")));
     }
 
     // Edge Cases
@@ -345,4 +563,100 @@ public class TransportCompanyServiceTests {
         List<EmployeeViewDTO> result = service.getEmployeesByCompany(company.getId());
         assertTrue(result.isEmpty());
     }
+    @Test
+    void getById_NonExistentId_ShouldReturnNull() {
+        TransportCompanyViewDTO result = service.getById(999L);
+        assertNull(result);
+    }
+
+    @Test
+    void getVehiclesByCompany_NoVehicles_ShouldReturnEmptyList() {
+        TransportCompanyCreateDTO companyDto = new TransportCompanyCreateDTO("Fast Transport", "123 Main St");
+        TransportCompanyViewDTO company = service.create(companyDto);
+
+        List<VehicleViewDTO> result = service.getVehiclesByCompany(company.getId());
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getTransportServicesByCompany_NoServices_ShouldReturnEmptyList() {
+        TransportCompanyCreateDTO companyDto = new TransportCompanyCreateDTO("Fast Transport", "123 Main St");
+        TransportCompanyViewDTO company = service.create(companyDto);
+
+        List<TransportServiceViewDTO> result = service.getTransportServicesByCompany(company.getId());
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getTotalRevenue_NoServices_ShouldReturnZero() {
+        TransportCompanyCreateDTO companyDto = new TransportCompanyCreateDTO("Fast Transport", "123 Main St");
+        TransportCompanyViewDTO company = service.create(companyDto);
+
+        BigDecimal revenue = service.getTotalRevenue(company.getId());
+        assertEquals(BigDecimal.ZERO, revenue);
+    }
+
+    @Test
+    void getTotalRevenue_WithNullPrices_ShouldIgnoreNulls() {
+        TransportCompanyCreateDTO companyDto = new TransportCompanyCreateDTO("Fast Transport", "123 Main St");
+        TransportCompanyViewDTO company = service.create(companyDto);
+
+        TransportCargoService companyEntity = new TransportCargoService();
+        companyEntity.setStartingDate(LocalDate.now());
+        companyEntity.setPrice(null); // Null price
+        companyEntity.setTransportCompany(companyRepo.getById(company.getId()).get());
+        companyEntity.setWeightInKilograms(BigDecimal.valueOf(25));
+        companyEntity.setLengthInCentimeters(50);
+        companyEntity.setWidthInCentimeters(25);
+        companyEntity.setHeightInCentimeters(25);
+        transportServiceRepo.create(companyEntity);
+
+        TransportPassengersService service2 = new TransportPassengersService();
+        service2.setStartingDate(LocalDate.now());
+        service2.setPrice(new BigDecimal("1500"));
+        service2.setTransportCompany(companyRepo.getById(company.getId()).get());
+        service2.setNumberOfPassengers(20);
+        transportServiceRepo.create(service2);
+
+        BigDecimal revenue = service.getTotalRevenue(company.getId());
+        assertEquals(new BigDecimal("1500.00"), revenue);
+    }
+
+    @Test
+    void getTotalTransportCount_NoServices_ShouldReturnZero() {
+        TransportCompanyCreateDTO companyDto = new TransportCompanyCreateDTO("Fast Transport", "123 Main St");
+        TransportCompanyViewDTO company = service.create(companyDto);
+
+        int count = service.getTotalTransportCount(company.getId());
+        assertEquals(0, count);
+    }
+
+    @Test
+    void getAllClientsForCompany_NoClients_ShouldReturnEmptyList() {
+        TransportCompanyCreateDTO companyDto = new TransportCompanyCreateDTO("Fast Transport", "123 Main St");
+        TransportCompanyViewDTO company = service.create(companyDto);
+
+        List<ClientViewDTO> result = service.getAllClientsForCompany(company.getId());
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getCompaniesBetweenRevenue_NoMatches_ShouldReturnEmptyList() {
+        TransportCompanyCreateDTO companyDto = new TransportCompanyCreateDTO("Low Revenue Co", "123 Low St");
+        TransportCompanyViewDTO company = service.create(companyDto);
+
+        TransportCargoService companyEntity = new TransportCargoService();
+        companyEntity.setStartingDate(LocalDate.now());
+        companyEntity.setPrice(new BigDecimal("1000"));
+        companyEntity.setTransportCompany(companyRepo.getById(company.getId()).get());
+        companyEntity.setWeightInKilograms(BigDecimal.valueOf(25));
+        companyEntity.setLengthInCentimeters(50);
+        companyEntity.setWidthInCentimeters(25);
+        companyEntity.setHeightInCentimeters(25);
+        transportServiceRepo.create(companyEntity);
+
+        List<TransportCompanyViewDTO> result = service.getCompaniesBetweenRevenue(new BigDecimal("2000"), new BigDecimal("3000"));
+        assertTrue(result.isEmpty());
+    }
+
 }

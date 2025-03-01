@@ -1,18 +1,10 @@
 package services.data.dto.transportservices;
 
-import java.time.LocalDate;
-import java.math.BigDecimal;
-
 public class TransportPassengersServiceViewDTO extends TransportServiceViewDTO {
 
     private int numberOfPassengers;
 
     public TransportPassengersServiceViewDTO() {
-    }
-
-    public TransportPassengersServiceViewDTO(Long clientId, Long destinationId, Long driverId, LocalDate endingDate, Long id, boolean isDelivered, boolean isPaid, BigDecimal price, LocalDate startingDate, Long transportCompanyId, Long vehicleId, int numberOfPassengers) {
-        super(clientId, destinationId, driverId, endingDate, id, isDelivered, isPaid, price, startingDate, transportCompanyId, vehicleId);
-        this.numberOfPassengers = numberOfPassengers;
     }
 
     public int getNumberOfPassengers() {

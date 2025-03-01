@@ -113,11 +113,4 @@ public interface ITransportCargoServiceService {
      */
     List<TransportCargoServiceViewDTO> getActiveServices(int page, int size);
 
-    /**
-     * Retrieves total cargo weight per driver.
-     *
-     * @return A map of driver IDs to total cargo weight in kilograms.
-     * @throws RepositoryException if the query fails (e.g., database errors).
-     */
-    Map<Long, BigDecimal> getTotalCargoWeightPerDriver();
 }

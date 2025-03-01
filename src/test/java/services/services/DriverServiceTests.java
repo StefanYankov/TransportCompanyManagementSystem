@@ -89,7 +89,7 @@ public class DriverServiceTests {
 
             driverMapper = new DriverMapper(companyRepo, dispatcherRepo, qualificationRepo);
             cargoServiceMapper = new TransportCargoServiceMapper(companyRepo,clientRepo,driverRepo,destinationRepo,vehicleRepo);
-            passengersServiceMapper = new TransportPassengersServiceMapper();
+            passengersServiceMapper = new TransportPassengersServiceMapper(companyRepo, clientRepo, driverRepo, vehicleRepo, destinationRepo);
             driverService = new DriverService(driverRepo, companyRepo, dispatcherRepo, cargoRepo, passengersRepo, qualificationRepo, driverMapper, cargoServiceMapper, passengersServiceMapper);
 
             TransportCompany company = new TransportCompany("Fast Transport", "123 Main St");

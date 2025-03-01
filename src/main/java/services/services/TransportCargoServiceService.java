@@ -215,23 +215,4 @@ public class TransportCargoServiceService implements ITransportCargoServiceServi
         }
     }
 
-    @Override
-    public Map<Long, BigDecimal> getTotalCargoWeightPerDriver() {
-        logger.debug("Retrieving total cargo weight per driver for {}", Constants.TRANSPORT_CARGO_SERVICE);
-        try {
-            // Fetch all services with driver relationship eagerly loaded
-            List<TransportCargoService> services = cargoServiceRepo.getAll(0, Integer.MAX_VALUE, "startingDate", true, "driver");
-            Map<Long, BigDecimal> weights = services.stream()
-                    .filter(s -> s.getDriver() != null && s.getWeightInKilograms() != null)
-                    .collect(Collectors.groupingBy(
-                            s -> s.getDriver().getId(),
-                            Collectors.reducing(BigDecimal.ZERO, TransportCargoService::getWeightInKilograms, BigDecimal::add)
-                    ));
-            logger.info("Retrieved total cargo weight for {} drivers", weights.size());
-            return weights;
-        } catch (RepositoryException e) {
-            logger.error("Failed to retrieve total cargo weight per driver, cause: {}", e.getMessage(), e);
-            throw e;
-        }
-    }
 }

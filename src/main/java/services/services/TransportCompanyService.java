@@ -1,27 +1,26 @@
 package services.services;
 
+import data.models.Client;
 import data.models.employee.Employee;
 import data.models.TransportCompany;
 import data.models.transportservices.TransportService;
 import data.models.vehicles.Vehicle;
 import data.repositories.IGenericRepository;
 import data.repositories.exceptions.RepositoryException;
-import org.hibernate.Hibernate; // Temporary for test fix, will remove later
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import services.common.Constants;
+import services.data.dto.clients.ClientViewDTO;
 import services.data.dto.companies.TransportCompanyCreateDTO;
 import services.data.dto.companies.TransportCompanyUpdateDTO;
 import services.data.dto.companies.TransportCompanyViewDTO;
 import services.data.dto.employees.EmployeeViewDTO;
 import services.data.dto.transportservices.TransportServiceViewDTO;
 import services.data.dto.vehicles.VehicleViewDTO;
-import services.data.mapping.mappers.EmployeeMapper;
-import services.data.mapping.mappers.TransportCompanyMapper;
-import services.data.mapping.mappers.TransportServiceMapper;
-import services.data.mapping.mappers.VehicleMapper;
+import services.data.mapping.mappers.*;
 import services.services.contracts.ITransportCompanyService;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,6 +34,7 @@ public class TransportCompanyService implements ITransportCompanyService {
     private final EmployeeMapper employeeMapper;
     private final VehicleMapper vehicleMapper;
     private final TransportServiceMapper transportServiceMapper;
+    private final ClientMapper clientMapper;
 
     public TransportCompanyService(IGenericRepository<TransportCompany, Long> companyRepo,
                                    IGenericRepository<Employee, Long> employeeRepo,
@@ -43,7 +43,8 @@ public class TransportCompanyService implements ITransportCompanyService {
                                    TransportCompanyMapper companyMapper,
                                    EmployeeMapper employeeMapper,
                                    VehicleMapper vehicleMapper,
-                                   TransportServiceMapper transportServiceMapper) {
+                                   TransportServiceMapper transportServiceMapper,
+                                   ClientMapper clientMapper) {
         this.companyRepo = companyRepo;
         this.employeeRepo = employeeRepo;
         this.vehicleRepo = vehicleRepo;
@@ -52,6 +53,7 @@ public class TransportCompanyService implements ITransportCompanyService {
         this.employeeMapper = employeeMapper;
         this.vehicleMapper = vehicleMapper;
         this.transportServiceMapper = transportServiceMapper;
+        this.clientMapper = clientMapper;
     }
 
     @Override
@@ -135,12 +137,13 @@ public class TransportCompanyService implements ITransportCompanyService {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<TransportCompanyViewDTO> getAll(int page, int size, String orderBy, boolean ascending, String filter) {
         logger.debug("Retrieving all {}: page={}, size={}, orderBy={}, ascending={}, filter={}", Constants.TRANSPORT_COMPANY, page, size, orderBy, ascending, filter);
         try {
             List<TransportCompanyViewDTO> result = companyRepo.getAllAndMap(
-                    page, size, orderBy, ascending, companyMapper::toViewDTO, company -> Hibernate.initialize(company.getEmployees())
+                    page, size, orderBy, ascending, companyMapper::toViewDTO, "employees"
             );
             if (filter != null && !filter.trim().isEmpty()) {
                 String filterLower = filter.trim().toLowerCase();
@@ -157,12 +160,41 @@ public class TransportCompanyService implements ITransportCompanyService {
         }
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<TransportCompanyViewDTO> getCompaniesBetweenRevenue(BigDecimal minRevenue, BigDecimal maxRevenue) {
+        if (minRevenue == null || maxRevenue == null) {
+            logger.error("Cannot retrieve companies: Revenue range is null");
+            throw new IllegalArgumentException("Revenue range must not be null");
+        }
+        if (minRevenue.compareTo(maxRevenue) > 0) {
+            logger.error("Invalid revenue range: minRevenue > maxRevenue");
+            throw new IllegalArgumentException("minRevenue must be less than or equal to maxRevenue");
+        }
+        logger.debug("Retrieving companies with revenue between {} and {}", minRevenue, maxRevenue);
+        try {
+            List<TransportCompany> allCompanies = companyRepo.getAll(0, Integer.MAX_VALUE, "name", true, "employees");
+            List<TransportCompanyViewDTO> result = allCompanies.stream()
+                    .filter(company -> {
+                        BigDecimal revenue = getTotalRevenue(company.getId());
+                        return revenue.compareTo(minRevenue) >= 0 && revenue.compareTo(maxRevenue) <= 0;
+                    })
+                    .map(companyMapper::toViewDTO)
+                    .collect(Collectors.toList());
+            logger.info("Found {} companies with revenue between {} and {}", result.size(), minRevenue, maxRevenue);
+            return result;
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve companies with revenue between {} and {}, cause: {}", minRevenue, maxRevenue, e.getMessage(), e);
+            throw e;
+        }
+    }
+
     @Override
     public List<TransportCompanyViewDTO> findByCriteria(Map<String, Object> conditions, String orderBy, boolean ascending) {
         logger.debug("Finding {} by criteria: conditions={}, orderBy={}, ascending={}", Constants.TRANSPORT_COMPANY, conditions, orderBy, ascending);
         try {
-            List<TransportCompanyViewDTO> result = companyRepo.findByCriteria(conditions, orderBy, ascending, "employees")
-                    .stream()
+            List<TransportCompany> companies = companyRepo.findByCriteria(conditions, orderBy, ascending, "employees");
+            List<TransportCompanyViewDTO> result = companies.stream()
                     .map(companyMapper::toViewDTO)
                     .collect(Collectors.toList());
             logger.info("Found {} {} matching criteria", result.size(), Constants.TRANSPORT_COMPANY);
@@ -183,7 +215,7 @@ public class TransportCompanyService implements ITransportCompanyService {
         try {
             Map<String, Object> conditions = new HashMap<>();
             conditions.put("transportCompany.id", companyId);
-            List<Employee> employees = employeeRepo.findByCriteria(conditions, "familyName", true);
+            List<Employee> employees = employeeRepo.findByCriteria(conditions, "familyName", true, "transportCompany");
             logger.info("Retrieved {} employees for company with ID: {}", employees.size(), companyId);
             return employees.stream()
                     .map(employeeMapper::toViewDTO)
@@ -219,7 +251,7 @@ public class TransportCompanyService implements ITransportCompanyService {
         }
         logger.debug("Retrieving transport services for {} with ID: {}", Constants.TRANSPORT_COMPANY, companyId);
         try {
-            List<TransportService> services = transportServiceRepo.findWithJoin("transportCompany", "id", companyId, "startingDate", true, "transportCompany");
+            List<TransportService> services = transportServiceRepo.findWithJoin("transportCompany", "id", companyId, "startingDate", true, "transportCompany", "client");
             logger.info("Retrieved {} transport services for {} with ID: {}", services.size(), Constants.TRANSPORT_COMPANY, companyId);
             return services.stream().map(transportServiceMapper::toViewDTO).collect(Collectors.toList());
         } catch (RepositoryException e) {
@@ -230,20 +262,117 @@ public class TransportCompanyService implements ITransportCompanyService {
 
     @Override
     public Map<Long, Integer> getEmployeeCountsPerCompany() {
-//        logger.debug("Retrieving employee counts per {}", Constants.TRANSPORT_COMPANY);
-//        try {
-//            List<TransportCompany> companies = companyRepo.getAll(0, Integer.MAX_VALUE, "name", true, company -> Hibernate.initialize(company.getEmployees()));
-//            Map<Long, Integer> result = companies.stream()
-//                    .collect(Collectors.toMap(
-//                            TransportCompany::getId,
-//                            company -> company.getEmployees().size()
-//                    ));
-//            logger.info("Retrieved employee counts for {} companies", result.size());
-//            return result;
-//        } catch (RepositoryException e) {
-//            logger.error("Failed to retrieve employee counts per {}, cause: {}", Constants.TRANSPORT_COMPANY, e.getMessage(), e);
-//            throw e;
-//        }
-        return Collections.emptyMap();
+        logger.debug("Retrieving employee counts per {}", Constants.TRANSPORT_COMPANY);
+        try {
+            List<TransportCompany> companies = companyRepo.getAll(0, Integer.MAX_VALUE, "name", true, null);
+            Map<Long, Integer> result = new HashMap<>();
+            for (TransportCompany company : companies) {
+                Map<String, Object> conditions = new HashMap<>();
+                conditions.put("transportCompany.id", company.getId());
+                List<Employee> employees = employeeRepo.findByCriteria(conditions, "familyName", true);
+                result.put(company.getId(), employees.size());
+            }
+            logger.info("Retrieved employee counts for {} companies", result.size());
+            return result;
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve employee counts per {}, cause: {}", Constants.TRANSPORT_COMPANY, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public BigDecimal getTotalRevenue(Long companyId) {
+        if (companyId == null) {
+            logger.error("Cannot retrieve total revenue: Company ID is null");
+            throw new IllegalArgumentException("Company ID must not be null");
+        }
+        logger.debug("Retrieving total revenue for company with ID: {}", companyId);
+        try {
+            Map<String, Object> conditions = new HashMap<>();
+            conditions.put("transportCompany.id", companyId);
+            List<TransportService> services = transportServiceRepo.findByCriteria(conditions, null, true);
+            BigDecimal totalRevenue = services.stream()
+                    .map(TransportService::getPrice)
+                    .filter(Objects::nonNull) // Handle null prices
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            logger.info("Total revenue for company with ID {}: {}", companyId, totalRevenue);
+            return totalRevenue;
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve total revenue for company with ID: {}, cause: {}", companyId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public int getTotalTransportCount(Long companyId) {
+        if (companyId == null) {
+            logger.error("Cannot retrieve total transport count: Company ID is null");
+            throw new IllegalArgumentException("Company ID must not be null");
+        }
+        logger.debug("Retrieving total transport count for company with ID: {}", companyId);
+        try {
+            Map<String, Object> conditions = new HashMap<>();
+            conditions.put("transportCompany.id", companyId);
+            List<TransportService> services = transportServiceRepo.findByCriteria(conditions, null, true);
+            int count = services.size();
+            logger.info("Total transport count for company with ID {}: {}", companyId, count);
+            return count;
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve total transport count for company with ID: {}, cause: {}", companyId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<ClientViewDTO> getAllClientsForCompany(Long companyId) {
+        if (companyId == null) {
+            logger.error("Cannot retrieve clients: Company ID is null");
+            throw new IllegalArgumentException("Company ID must not be null");
+        }
+        logger.debug("Retrieving all clients for company with ID: {}", companyId);
+        try {
+            Map<String, Object> conditions = new HashMap<>();
+            conditions.put("transportCompany.id", companyId);
+            List<TransportService> services = transportServiceRepo.findByCriteria(conditions, null, true, "client");
+            Set<Client> clients = services.stream()
+                    .map(TransportService::getClient)
+                    .filter(Objects::nonNull) // Handle null clients
+                    .collect(Collectors.toSet());
+            List<ClientViewDTO> clientViewDTOs = clients.stream()
+                    .map(clientMapper::toViewDTO)
+                    .collect(Collectors.toList());
+            logger.info("Retrieved {} clients for company with ID: {}", clientViewDTOs.size(), companyId);
+            return clientViewDTOs;
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve clients for company with ID: {}, cause: {}", companyId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<ClientViewDTO> getAllClientsForCompany(Long companyId, boolean paid) {
+        if (companyId == null) {
+            logger.error("Cannot retrieve clients: Company ID is null");
+            throw new IllegalArgumentException("Company ID must not be null");
+        }
+        logger.debug("Retrieving all clients for company with ID: {}, paid: {}", companyId, paid);
+        try {
+            Map<String, Object> conditions = new HashMap<>();
+            conditions.put("transportCompany.id", companyId);
+            List<TransportService> services = transportServiceRepo.findByCriteria(conditions, null, true, "client");
+            Set<Client> clients = services.stream()
+                    .filter(service -> service.isPaid() == paid)
+                    .map(TransportService::getClient)
+                    .filter(Objects::nonNull) // Handle null clients
+                    .collect(Collectors.toSet());
+            List<ClientViewDTO> clientViewDTOs = clients.stream()
+                    .map(clientMapper::toViewDTO)
+                    .collect(Collectors.toList());
+            logger.info("Retrieved {} clients for company with ID: {}, paid: {}", clientViewDTOs.size(), companyId, paid);
+            return clientViewDTOs;
+        } catch (RepositoryException e) {
+            logger.error("Failed to retrieve clients for company with ID: {}, paid: {}, cause: {}", companyId, paid, e.getMessage(), e);
+            throw e;
+        }
     }
 }

@@ -3,7 +3,7 @@ package services.data.dto.transportservices;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public abstract class TransportServiceViewDTO {
+public class TransportServiceViewDTO {
     public Long id;
     public Long transportCompanyId;
     public LocalDate startingDate;

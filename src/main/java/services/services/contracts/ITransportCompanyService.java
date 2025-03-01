@@ -1,6 +1,7 @@
 package services.services.contracts;
 
 import data.repositories.exceptions.RepositoryException;
+import services.data.dto.clients.ClientViewDTO;
 import services.data.dto.companies.TransportCompanyCreateDTO;
 import services.data.dto.companies.TransportCompanyUpdateDTO;
 import services.data.dto.companies.TransportCompanyViewDTO;
@@ -8,6 +9,7 @@ import services.data.dto.employees.EmployeeViewDTO;
 import services.data.dto.transportservices.TransportServiceViewDTO;
 import services.data.dto.vehicles.VehicleViewDTO;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -119,4 +121,57 @@ public interface ITransportCompanyService {
      * @throws RepositoryException if the query fails (e.g., database errors)
      */
     public Map<Long, Integer> getEmployeeCountsPerCompany();
+
+    /**
+     * Retrieves the total revenue for a specific transport company based on its transport services.
+     *
+     * @param companyId the ID of the transport company
+     * @return the total revenue as a BigDecimal
+     * @throws IllegalArgumentException if the company ID is null
+     * @throws RepositoryException if the query fails (e.g., database errors)
+     */
+    public BigDecimal getTotalRevenue(Long companyId);
+
+    /**
+     * Retrieves the total number of transport services for a specific transport company.
+     *
+     * @param companyId the ID of the transport company
+     * @return the total number of transport services as an integer
+     * @throws IllegalArgumentException if the company ID is null
+     * @throws RepositoryException if the query fails (e.g., database errors)
+     */
+    public int getTotalTransportCount(Long companyId);
+
+    /**
+     * Retrieves all clients associated with a specific transport company through its transport services.
+     *
+     * @param companyId the ID of the transport company
+     * @return a list of client view DTOs
+     * @throws IllegalArgumentException if the company ID is null
+     * @throws RepositoryException if the query fails (e.g., database errors)
+     */
+    public List<ClientViewDTO> getAllClientsForCompany(Long companyId);
+
+    /**
+     * Retrieves all clients associated with a specific transport company, filtered by payment status.
+     *
+     * @param companyId the ID of the transport company
+     * @param paid whether to retrieve clients who have paid (true) or not paid (false)
+     * @return a list of client view DTOs
+     * @throws IllegalArgumentException if the company ID is null
+     * @throws RepositoryException if the query fails (e.g., database errors)
+     */
+    public List<ClientViewDTO> getAllClientsForCompany(Long companyId, boolean paid);
+
+    /**
+     * Retrieves all transport companies with total revenue within a specified range.
+     *
+     * @param minRevenue the minimum revenue threshold
+     * @param maxRevenue the maximum revenue threshold
+     * @return a list of transport company view DTOs
+     * @throws IllegalArgumentException if minRevenue or maxRevenue is null, or if minRevenue exceeds maxRevenue
+     * @throws RepositoryException if the query fails (e.g., database errors)
+     */
+    public List<TransportCompanyViewDTO> getCompaniesBetweenRevenue(BigDecimal minRevenue, BigDecimal maxRevenue);
+
 }

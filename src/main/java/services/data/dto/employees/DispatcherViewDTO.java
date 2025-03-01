@@ -11,10 +11,6 @@ public class DispatcherViewDTO extends EmployeeViewDTO {
     public DispatcherViewDTO() {
     }
 
-    public DispatcherViewDTO(Long id, String firstName, String familyName, BigDecimal salary, Long transportCompanyId, Set<Long> supervisedDriverIds) {
-        super(id, firstName, familyName, salary, transportCompanyId);
-        this.supervisedDriverIds = supervisedDriverIds;
-    }
 
     public Set<Long> getSupervisedDriverIds() {
         return supervisedDriverIds;

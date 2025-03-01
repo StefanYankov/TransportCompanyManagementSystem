@@ -35,6 +35,7 @@ public class VanServiceTests {
     private IGenericRepository<Driver, Long> driverRepo;
     private IGenericRepository<Client, Long> clientRepo;
     private IGenericRepository<Destination, Long> destinationRepo;
+    private IGenericRepository<Vehicle, Long> vehicleRepo;
     private VanService service;
     private VanMapper vanMapper;
     private TransportPassengersServiceMapper transportServiceMapper;
@@ -91,8 +92,7 @@ public class VanServiceTests {
 
             // Initialize mappers
             vanMapper = new VanMapper(companyRepo);
-            transportServiceMapper = new TransportPassengersServiceMapper();
-
+            transportServiceMapper = new TransportPassengersServiceMapper(companyRepo, clientRepo, driverRepo, vehicleRepo, destinationRepo);
             service = new VanService(vanRepo, companyRepo, transportServiceRepo, vanMapper, transportServiceMapper);
         } catch (Exception e) {
             fail("Failed to initialize SessionFactory: " + e.getMessage());

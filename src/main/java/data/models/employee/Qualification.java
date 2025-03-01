@@ -2,6 +2,9 @@ package data.models.employee;
 
 import data.common.BaseModel;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -40,7 +43,8 @@ public class Qualification extends BaseModel {
         this.description = description;
     }
 
-    @ManyToMany(mappedBy = "qualifications") // This is the other side of the relation
+    @ManyToMany(mappedBy = "qualifications")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     public Set<Driver> getDrivers() {
         return drivers;
     }

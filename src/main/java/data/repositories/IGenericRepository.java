@@ -61,7 +61,7 @@ public interface IGenericRepository<T, TKey> {
      * @param id the identifier of the entity; must not be null
      * @return an Optional containing the entity if found, or empty if not found
      * @throws IllegalArgumentException if the ID is null
-     * @throws RepositoryException if retrieval fails due to database errors
+     * @throws RepositoryException      if retrieval fails due to database errors
      */
     Optional<T> getById(TKey id) throws RepositoryException;
 
@@ -70,13 +70,13 @@ public interface IGenericRepository<T, TKey> {
      * This method allows dynamic eager loading of related entities or collections (e.g., "qualifications" for a Driver),
      * overriding the default lazy loading behavior defined in the entity mappings.
      *
-     * @param id the identifier of the entity; must not be null
+     * @param id             the identifier of the entity; must not be null
      * @param fetchRelations variable argument list of relationship names to fetch eagerly (e.g., "qualifications", "transportCompany");
      *                       if empty or null, no additional relationships are fetched beyond the entity itself
      * @return an Optional containing the entity if found, or empty if not found; relationships specified in fetchRelations
-     *         are eagerly loaded if present
+     * are eagerly loaded if present
      * @throws IllegalArgumentException if the ID is null
-     * @throws RepositoryException if retrieval fails due to database errors or invalid fetchRelations (e.g., a non-existent relationship name)
+     * @throws RepositoryException      if retrieval fails due to database errors or invalid fetchRelations (e.g., a non-existent relationship name)
      */
     Optional<T> getById(TKey id, String... fetchRelations) throws RepositoryException;
 
@@ -108,16 +108,16 @@ public interface IGenericRepository<T, TKey> {
     public List<T> findByCriteria(Map<String, Object> conditions, String orderBy, Boolean ascending, int page, int pageSize, String... fetchRelations) throws RepositoryException;
 
 
-        /**
-         * Finds entities with aggregated data from a related collection, sorted by the aggregation result.
-         *
-         * @param joinRelation     the name of the relation to join and aggregate over (e.g., "transportServices")
-         * @param aggregationField the field in the joined relation to aggregate (e.g., "price")
-         * @param groupByField     the field in the root entity to group by (e.g., "id")
-         * @param ascending        true for ascending order, false for descending
-         * @return a list of entities sorted by the aggregated value
-         * @throws RepositoryException if the query fails (e.g., invalid joinRelation, aggregationField, or database errors)
-         */
+    /**
+     * Finds entities with aggregated data from a related collection, sorted by the aggregation result.
+     *
+     * @param joinRelation     the name of the relation to join and aggregate over (e.g., "transportServices")
+     * @param aggregationField the field in the joined relation to aggregate (e.g., "price")
+     * @param groupByField     the field in the root entity to group by (e.g., "id")
+     * @param ascending        true for ascending order, false for descending
+     * @return a list of entities sorted by the aggregated value
+     * @throws RepositoryException if the query fails (e.g., invalid joinRelation, aggregationField, or database errors)
+     */
     List<T> findWithAggregation(String joinRelation, String aggregationField, String groupByField, boolean ascending);
 
     /**
@@ -157,9 +157,9 @@ public interface IGenericRepository<T, TKey> {
     /**
      * Updates an existing entity in the persistent store and maps it to a DTO within the same transaction.
      *
-     * @param <D>            the type of the DTO to return
-     * @param entity         the entity to update; must not be null
-     * @param mapper         a function to map the updated entity to a DTO; must not be null
+     * @param <D>             the type of the DTO to return
+     * @param entity          the entity to update; must not be null
+     * @param mapper          a function to map the updated entity to a DTO; must not be null
      * @param lazyInitializer an optional consumer to initialize lazy-loaded relationships
      * @return the mapped DTO representing the updated entity
      * @throws RepositoryException if the entity or mapper is null, or update fails
@@ -170,13 +170,13 @@ public interface IGenericRepository<T, TKey> {
     /**
      * Retrieves an entity by its identifier and maps it to a DTO within the same transaction.
      *
-     * @param <D>            the type of the DTO to return
-     * @param id             the identifier of the entity; must not be null
-     * @param mapper         a function to map the entity to a DTO; must not be null
+     * @param <D>             the type of the DTO to return
+     * @param id              the identifier of the entity; must not be null
+     * @param mapper          a function to map the entity to a DTO; must not be null
      * @param lazyInitializer an optional consumer to initialize lazy-loaded relationships
      * @return an Optional containing the mapped DTO if found, or empty if not found
      * @throws IllegalArgumentException if the ID or mapper is null
-     * @throws RepositoryException if retrieval fails due to database errors
+     * @throws RepositoryException      if retrieval fails due to database errors
      */
     <D> Optional<D> getByIdAndMap(TKey id, Function<T, D> mapper, Consumer<T> lazyInitializer) throws RepositoryException;
 
@@ -189,12 +189,12 @@ public interface IGenericRepository<T, TKey> {
      * @param orderBy        the field to sort by; may be null for no sorting
      * @param ascending      true for ascending order, false for descending
      * @param mapper         a function to map each entity to a DTO; must not be null
-     * @param lazyInitializer an optional consumer to initialize lazy-loaded relationships
+     * @param fetchRelations the names of relations to eagerly fetch (e.g., "employees", "vehicles"); may be null or empty
      * @return a list of mapped DTOs
      * @throws IllegalArgumentException if the mapper is null
-     * @throws RepositoryException if the query fails due to database errors
+     * @throws RepositoryException      if the query fails due to database errors
      */
-    <D> List<D> getAllAndMap(int page, int size, String orderBy, boolean ascending, Function<T, D> mapper, Consumer<T> lazyInitializer) throws RepositoryException;
+    <D> List<D> getAllAndMap(int page, int size, String orderBy, boolean ascending, Function<T, D> mapper, String... fetchRelations) throws RepositoryException;
 
     /**
      * Retrieves all related entities of type R associated with a specific entity of type T via a many-to-many relationship,

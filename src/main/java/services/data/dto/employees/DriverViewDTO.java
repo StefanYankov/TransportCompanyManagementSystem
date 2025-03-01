@@ -1,6 +1,5 @@
 package services.data.dto.employees;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,11 +11,6 @@ public class DriverViewDTO extends EmployeeViewDTO {
     public DriverViewDTO() {
     }
 
-    public DriverViewDTO(Long id, String firstName, String familyName, BigDecimal salary, Long transportCompanyId, Long dispatcherId, Set<Long> qualificationIds) {
-        super(id, firstName, familyName, salary, transportCompanyId);
-        this.dispatcherId = dispatcherId;
-        this.qualificationIds = qualificationIds;
-    }
 
     public Long getDispatcherId() {
         return dispatcherId;

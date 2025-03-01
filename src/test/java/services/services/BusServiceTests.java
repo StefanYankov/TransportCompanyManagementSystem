@@ -35,6 +35,7 @@ public class BusServiceTests {
     private IGenericRepository<Driver, Long> driverRepo;
     private IGenericRepository<Client, Long> clientRepo;
     private IGenericRepository<Destination, Long> destinationRepo;
+    private IGenericRepository<Vehicle, Long> vehicleRepo;
     private BusService service;
     private BusMapper busMapper;
     private TransportPassengersServiceMapper transportServiceMapper;
@@ -73,6 +74,7 @@ public class BusServiceTests {
             driverRepo = new GenericRepository<>(sessionFactory, Driver.class);
             clientRepo = new GenericRepository<>(sessionFactory, Client.class);
             destinationRepo = new GenericRepository<>(sessionFactory, Destination.class);
+            vehicleRepo = new GenericRepository<>(sessionFactory, Vehicle.class);
 
             // Seed data
             TransportCompany company = new TransportCompany("Fast Transport", "123 Main St");
@@ -91,7 +93,7 @@ public class BusServiceTests {
 
             // Initialize mappers
             busMapper = new BusMapper(companyRepo);
-            transportServiceMapper = new TransportPassengersServiceMapper();
+            transportServiceMapper = new TransportPassengersServiceMapper(companyRepo, clientRepo, driverRepo, vehicleRepo, destinationRepo);
 
             service = new BusService(busRepo, companyRepo, transportServiceRepo, busMapper, transportServiceMapper);
         } catch (Exception e) {
@@ -285,6 +287,17 @@ public class BusServiceTests {
     }
 
     @Test
+    void create_DuplicateRegistrationPlate_ShouldThrowRepositoryException() {
+        TransportCompany company = companyRepo.getAll(0, 1, null, true).getFirst();
+        BusCreateDTO dto1 = new BusCreateDTO("CA1234AC_DUP", company.getId(), 50, true, new BigDecimal("500.00"));
+        service.create(dto1);
+
+        BusCreateDTO dto2 = new BusCreateDTO("CA1234AC_DUP", company.getId(), 40, false, new BigDecimal("400.00"));
+        assertThrows(RepositoryException.class, () -> service.create(dto2),
+                "Creating a second bus with the same registration plate should throw RepositoryException due to unique constraint");
+    }
+
+    @Test
     void update_NullDTO_ShouldThrowIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> service.update(null));
     }
@@ -319,6 +332,55 @@ public class BusServiceTests {
     }
 
     @Test
+    void getTransportServicesForBus_InvalidVehicleType_ShouldExcludeNonBusServices() {
+        TransportCompany company = companyRepo.getAll(0, 1, null, true).getFirst();
+        Driver driver = new Driver();
+        driver.setFirstName("John");
+        driver.setFamilyName("Doe");
+        driver.setSalary(new BigDecimal("50000"));
+        driver.setTransportCompany(company);
+        driverRepo.create(driver);
+
+        // Create a Bus
+        BusCreateDTO busDto = new BusCreateDTO("BUS123", company.getId(), 50, true, new BigDecimal("500.00"));
+        BusViewDTO bus = service.create(busDto);
+
+        // Create a Truck
+        Truck truck = new Truck();
+        truck.setRegistrationPlate("TRK123");
+        truck.setTransportCompany(company);
+        truck.setMaxCargoCapacityKg(10000.0);
+        truck.setCurrentCargoCapacityKg(0.0);
+        truck.setCargoType(CargoType.REGULAR);
+        truck.setTruckType(TruckType.BOX);
+        vehicleRepo.create(truck);
+
+        // Create a TransportPassengersService with the Bus
+        TransportPassengersService busService = new TransportPassengersService();
+        busService.setTransportCompany(company);
+        busService.setPrice(new BigDecimal("1000.00"));
+        busService.setStartingDate(LocalDate.now());
+        busService.setVehicle(busRepo.getById(bus.getId()).get());
+        busService.setDriver(driver);
+        busService.setNumberOfPassengers(20);
+        transportServiceRepo.create(busService);
+
+        // Create a TransportPassengersService with the Truck (invalid for BusService)
+        TransportPassengersService truckService = new TransportPassengersService();
+        truckService.setTransportCompany(company);
+        truckService.setPrice(new BigDecimal("1500.00"));
+        truckService.setStartingDate(LocalDate.now());
+        truckService.setVehicle(truck);
+        truckService.setDriver(driver);
+        truckService.setNumberOfPassengers(5); // Even though it's a Truck, we simulate misuse
+        transportServiceRepo.create(truckService);
+
+        List<? extends TransportServiceViewDTO> services = service.getTransportServicesForBus(bus.getId(), 0, 10);
+        assertEquals(1, services.size(), "Should only return services linked to the Bus");
+        assertEquals(bus.getId(), services.getFirst().getVehicleId(), "Service should be linked to the Bus, not the Truck");
+    }
+
+    @Test
     void getTransportServicesForBus_NullId_ShouldThrowIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> service.getTransportServicesForBus(null, 0, 10));
     }
@@ -339,6 +401,22 @@ public class BusServiceTests {
     }
 
     // Edge Cases
+
+    @Test
+    void create_MaxPassengerCapacityBoundaries_ShouldPersistCorrectly() {
+        TransportCompany company = companyRepo.getAll(0, 1, null, true).getFirst();
+
+        // Test minimum capacity
+        BusCreateDTO minDto = new BusCreateDTO("CA1234AC_MIN", company.getId(), 1, true, new BigDecimal("500.00"));
+        BusViewDTO minResult = service.create(minDto);
+        assertEquals(1, minResult.getMaxPassengerCapacity(), "Minimum passenger capacity should be persisted");
+
+        // Test large capacity
+        BusCreateDTO maxDto = new BusCreateDTO("CA1234AC_MAX", company.getId(), 1000, false, new BigDecimal("1000.00"));
+        BusViewDTO maxResult = service.create(maxDto);
+        assertEquals(1000, maxResult.getMaxPassengerCapacity(), "Large passenger capacity should be persisted");
+    }
+
     @Test
     void getById_NonExistentId_ShouldReturnNull() {
         BusViewDTO result = service.getById(999L);

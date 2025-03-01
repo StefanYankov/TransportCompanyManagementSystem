@@ -294,16 +294,25 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
         }, "getByIdAndMap"));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public <D> List<D> getAllAndMap(int page, int size, String orderBy, boolean ascending, Function<T, D> mapper, Consumer<T> lazyInitializer) throws RepositoryException {
-        if (mapper == null){
+    public <D> List<D> getAllAndMap(int page, int size, String orderBy, boolean ascending, Function<T, D> mapper, String... fetchRelations) throws RepositoryException {
+        if (mapper == null) {
             throw new IllegalArgumentException("Mapper function must not be null");
         }
         return executeInTransaction(session -> {
             CriteriaBuilder cb = session.getCriteriaBuilder();
             CriteriaQuery<T> cq = cb.createQuery(entityClass);
             Root<T> root = cq.from(entityClass);
+
+            // Handle fetch relations
+            if (fetchRelations != null && fetchRelations.length > 0) {
+                for (String relation : fetchRelations) {
+                    root.fetch(relation, JoinType.LEFT);
+                }
+            }
 
             cq.select(root);
             if (orderBy != null) {
@@ -314,7 +323,6 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
             query.setFirstResult(page * size);
             query.setMaxResults(size);
             List<T> entities = query.list();
-            if (lazyInitializer != null) entities.forEach(lazyInitializer);
             return entities.stream().map(mapper).collect(Collectors.toList());
         }, "getAllAndMap");
     }

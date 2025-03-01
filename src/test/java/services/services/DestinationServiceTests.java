@@ -138,6 +138,30 @@ public class DestinationServiceTests {
     }
 
     @Test
+    void delete_DestinationWithServices_ShouldDeleteAndNullifyServices() {
+        TransportCompany company = companyRepo.getAll(0, 1, null, true).getFirst();
+        DestinationCreateDTO dto = new DestinationCreateDTO("New York", "Los Angeles");
+        DestinationViewDTO dest = service.create(dto);
+
+        TransportCargoService serviceEntity = new TransportCargoService();
+        serviceEntity.setTransportCompany(company);
+        serviceEntity.setPrice(new BigDecimal("2000"));
+        serviceEntity.setStartingDate(LocalDate.now());
+        serviceEntity.setDestination(destinationRepo.getById(dest.getId()).get());
+        serviceEntity.setWeightInKilograms(BigDecimal.valueOf(25));
+        serviceEntity.setLengthInCentimeters(50);
+        serviceEntity.setWidthInCentimeters(25);
+        serviceEntity.setHeightInCentimeters(25);
+        transportServiceRepo.create(serviceEntity);
+
+        service.delete(dest.getId());
+        assertNull(service.getById(dest.getId()), "Destination should be deleted");
+
+        TransportService updatedService = transportServiceRepo.getById(serviceEntity.getId()).get();
+        assertNull(updatedService.getDestination(), "Transport service destination should be null after deletion");
+    }
+
+    @Test
     void getById_ExistingId_ShouldReturnDestination() {
         DestinationCreateDTO dto = new DestinationCreateDTO("Test Start", "Test End");
         DestinationViewDTO created = service.create(dto);

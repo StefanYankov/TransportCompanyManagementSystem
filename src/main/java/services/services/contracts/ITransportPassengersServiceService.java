@@ -1,114 +1,140 @@
 package services.services.contracts;
 
-import data.models.transportservices.TransportPassengersService;
+import data.repositories.exceptions.RepositoryException;
 import services.data.dto.transportservices.TransportPassengersServiceCreateDTO;
 import services.data.dto.transportservices.TransportPassengersServiceUpdateDTO;
+import services.data.dto.transportservices.TransportPassengersServiceViewDTO;
 
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Service interface for managing {@link TransportPassengersService} entities with CRUD operations.
+ * Service contract for managing {@link data.models.transportservices.TransportPassengersService} entities,
+ * providing CRUD operations and specialized queries exposed through DTOs.
  */
 public interface ITransportPassengersServiceService {
 
     /**
-     * Creates a new passenger transport service synchronously.
+     * Creates a new transport passengers service based on the provided DTO.
      *
-     * @param dto the DTO containing data for the new passenger transport service
-     * @return the created TransportPassengersService entity
+     * @param dto the DTO containing data for the new transport passengers service
+     * @return a view DTO representing the created transport passengers service
+     * @throws IllegalArgumentException if the DTO is null
+     * @throws RepositoryException if the creation fails due to database constraints or errors
      */
-    public TransportPassengersService create(TransportPassengersServiceCreateDTO dto);
+    TransportPassengersServiceViewDTO create(TransportPassengersServiceCreateDTO dto);
 
     /**
-     * Updates an existing passenger transport service synchronously.
+     * Updates an existing transport passengers service based on the provided DTO.
      *
-     * @param dto the DTO containing updated data for the passenger transport service
-     * @return the updated TransportPassengersService entity
+     * @param dto the DTO containing updated data for the transport passengers service
+     * @return a view DTO representing the updated transport passengers service
+     * @throws IllegalArgumentException if the DTO or its ID is null
+     * @throws RepositoryException if the service is not found or update fails
      */
-    public TransportPassengersService update(TransportPassengersServiceUpdateDTO dto);
+    TransportPassengersServiceViewDTO update(TransportPassengersServiceUpdateDTO dto);
 
     /**
-     * Deletes a passenger transport service by its ID synchronously.
+     * Deletes a transport passengers service by its ID.
      *
-     * @param id the ID of the passenger transport service to delete
+     * @param id the ID of the transport passengers service to delete
+     * @throws IllegalArgumentException if the ID is null
+     * @throws RepositoryException if the service is not found or deletion fails
      */
-    public void delete(Long id);
+    void delete(Long id);
 
     /**
-     * Retrieves a passenger transport service by its ID synchronously.
+     * Retrieves a transport passengers service by its ID.
      *
-     * @param id the ID of the passenger transport service to retrieve
-     * @return the TransportPassengersService entity, or null if not found
+     * @param id the ID of the transport passengers service to retrieve
+     * @return a view DTO representing the transport passengers service, or null if not found
+     * @throws IllegalArgumentException if the ID is null
+     * @throws RepositoryException if retrieval fails due to database errors
      */
-    public TransportPassengersService getById(Long id);
+    TransportPassengersServiceViewDTO getById(Long id);
 
     /**
-     * Retrieves a list of all passenger transport service synchronously with pagination and sorting.
+     * Retrieves a paginated, sorted list of all transport passengers services with optional filtering.
      *
-     * @param page      the page number (0-based)
-     * @param size      the number of entities per page
-     * @param orderBy   the field to sort by (e.g., "name")
+     * @param page the page number (0-based)
+     * @param size the number of items per page
+     * @param orderBy the field to sort by (e.g., "startingDate")
      * @param ascending true for ascending order, false for descending
-     * @return a list of TransportCompany entities
+     * @param filter an optional filter string to match against service attributes (e.g., description)
+     * @return a list of view DTOs representing the transport passengers services
+     * @throws RepositoryException if retrieval fails due to database errors
      */
-    public List<TransportPassengersService> getAll(int page, int size, String orderBy, boolean ascending);
+    List<TransportPassengersServiceViewDTO> getAll(int page, int size, String orderBy, boolean ascending, String filter);
 
     /**
-     * Retrieves passenger transports sorted by destination synchronously.
+     * Retrieves transport passengers services sorted by destination ending location.
      *
-     * @param ascending true for ascending order by startingLocation, false for descending
-     * @return a list of TransportPassengersService entities sorted by destination
+     * @param page the page number (0-based)
+     * @param size the number of items per page
+     * @param ascending true for ascending order, false for descending
+     * @return a list of view DTOs representing the transport passengers services sorted by destination
+     * @throws RepositoryException if retrieval fails due to database errors
      */
-    public List<TransportPassengersService> getTransportsSortedByDestination(boolean ascending);
+    List<TransportPassengersServiceViewDTO> getTransportsSortedByDestination(int page, int size, boolean ascending);
 
     /**
-     * Saves all passenger transport data to a binary file synchronously.
+     * Retrieves the total count of transport passengers services.
      *
-     * @param filePath the path to the binary file
-     * @throws IOException if file writing fails
+     * @return the total number of transport passengers services
+     * @throws RepositoryException if retrieval fails due to database errors
      */
-    public void saveToBinaryFile(String filePath) throws IOException;
+    int getTotalTransportCount();
 
     /**
-     * Loads passenger transport data from a binary file synchronously.
+     * Retrieves currently active transport passengers services (e.g., ongoing based on dates).
      *
-     * @param filePath the path to the binary file
-     * @throws IOException if file reading fails
-     * @throws ClassNotFoundException if deserialization fails
+     * @param page the page number (0-based)
+     * @param size the number of items per page
+     * @param orderBy the field to sort by (e.g., "startingDate")
+     * @param ascending true for ascending order, false for descending
+     * @return a list of view DTOs representing active transport passengers services
+     * @throws RepositoryException if retrieval fails due to database errors
      */
-    public void loadFromBinaryFile(String filePath) throws IOException, ClassNotFoundException;
+    List<TransportPassengersServiceViewDTO> getActiveServices(int page, int size, String orderBy, boolean ascending);
 
     /**
-     * Saves all passenger transport data to a JSON file synchronously.
+     * Retrieves transport passengers services associated with a specific driver.
      *
-     * @param filePath the path to the JSON file
-     * @throws IOException if file writing fails
+     * @param driverId the ID of the driver
+     * @param page the page number (0-based)
+     * @param size the number of items per page
+     * @param orderBy the field to sort by (e.g., "startingDate")
+     * @param ascending true for ascending order, false for descending
+     * @return a list of view DTOs representing the transport passengers services for the driver
+     * @throws IllegalArgumentException if the driver ID is null
+     * @throws RepositoryException if retrieval fails due to database errors
      */
-    public void saveToJsonFile(String filePath) throws IOException;
+    List<TransportPassengersServiceViewDTO> getByDriver(Long driverId, int page, int size, String orderBy, boolean ascending);
 
     /**
-     * Loads passenger transport data from a JSON file synchronously.
+     * Retrieves transport passengers services associated with a specific client.
      *
-     * @param filePath the path to the JSON file
-     * @throws IOException if file reading fails
+     * @param clientId the ID of the client
+     * @param page the page number (0-based)
+     * @param size the number of items per page
+     * @param orderBy the field to sort by (e.g., "startingDate")
+     * @param ascending true for ascending order, false for descending
+     * @return a list of view DTOs representing the transport passengers services for the client
+     * @throws IllegalArgumentException if the client ID is null
+     * @throws RepositoryException if retrieval fails due to database errors
      */
-    public void loadFromJsonFile(String filePath) throws IOException;
+    List<TransportPassengersServiceViewDTO> getByClient(Long clientId, int page, int size, String orderBy, boolean ascending);
 
     /**
-     * Calculates the total number of passenger transports synchronously.
+     * Retrieves transport passengers services associated with a specific company.
      *
-     * @return the total count of TransportPassengersService entities
+     * @param companyId the ID of the company
+     * @param page the page number (0-based)
+     * @param size the number of items per page
+     * @param orderBy the field to sort by (e.g., "startingDate")
+     * @param ascending true for ascending order, false for descending
+     * @return a list of view DTOs representing the transport passengers services for the company
+     * @throws IllegalArgumentException if the company ID is null
+     * @throws RepositoryException if retrieval fails due to database errors
      */
-    public int getTotalTransportCount();
-
-    /**
-     * Calculates the total revenue from all passenger transports synchronously.
-     *
-     * @return the total revenue as a BigDecimal
-     */
-    public BigDecimal getTotalRevenue();
-
-
+    List<TransportPassengersServiceViewDTO> getByCompany(Long companyId, int page, int size, String orderBy, boolean ascending);
 }

@@ -134,6 +134,42 @@ public class QualificationServiceTests {
     }
 
     @Test
+    void delete_QualificationWithDrivers_ShouldDeleteAndRemoveFromDrivers() {
+        TransportCompany company = companyRepo.getAll(0, 1, null, true).getFirst();
+
+        // Create two qualifications to test retention of others
+        QualificationCreateDTO qual1Dto = new QualificationCreateDTO("Heavy Duty License", "For large vehicles");
+        QualificationViewDTO qual1 = service.create(qual1Dto);
+        QualificationCreateDTO qual2Dto = new QualificationCreateDTO("Light Duty License", "For small vehicles");
+        QualificationViewDTO qual2 = service.create(qual2Dto);
+
+        Driver driver = new Driver();
+        driver.setFirstName("John");
+        driver.setFamilyName("Doe");
+        driver.setSalary(new BigDecimal("50000"));
+        driver.setTransportCompany(company);
+        driver.setQualifications(Set.of(
+                qualificationRepo.getById(qual1.getId()).get(),
+                qualificationRepo.getById(qual2.getId()).get()
+        ));
+        driverRepo.create(driver);
+
+        // Verify initial state
+        Driver preDeleteDriver = driverRepo.getById(driver.getId(), "qualifications").get();
+        assertEquals(2, preDeleteDriver.getQualifications().size(), "Driver should have 2 qualifications initially");
+
+        // Delete one qualification
+        service.delete(qual1.getId());
+        assertNull(service.getById(qual1.getId()), "Qualification should be deleted");
+
+        // Fetch driver fresh to reflect database state
+        Driver updatedDriver = driverRepo.getById(driver.getId(), "qualifications").get();
+        assertEquals(1, updatedDriver.getQualifications().size(), "Driver should have 1 qualification after deletion");
+        assertTrue(updatedDriver.getQualifications().stream().anyMatch(q -> q.getId().equals(qual2.getId())),
+                "Driver should retain the remaining qualification");
+    }
+
+    @Test
     void getById_ExistingId_ShouldReturnQualification() {
         QualificationCreateDTO dto = new QualificationCreateDTO("Test", "Test desc");
         QualificationViewDTO created = service.create(dto);

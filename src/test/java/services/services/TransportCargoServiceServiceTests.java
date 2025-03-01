@@ -451,51 +451,6 @@ public class TransportCargoServiceServiceTests {
         assertFalse(result.getFirst().isDelivered());
     }
 
-    @Test
-    void getTotalCargoWeightPerDriver_WithServices_ShouldReturnWeights() {
-        TransportCompany company = companyRepo.getAll(0, 1, null, true).getFirst();
-        Client client = clientRepo.getAll(0, 1, null, true).getFirst();
-        Driver driver = driverRepo.getAll(0, 1, null, true).getFirst();
-        Destination destination = destinationRepo.getAll(0, 1, null, true).getFirst();
-        List<Vehicle> vehicles = vehicleRepo.getAll(0, 1, null, true);
-        Vehicle truck = vehicles.getFirst();
-
-        TransportCargoServiceCreateDTO dto1 = new TransportCargoServiceCreateDTO();
-        dto1.setClientId(client.getId());
-        dto1.setDestinationId(destination.getId());
-        dto1.setDriverId(driver.getId());
-        dto1.setEndingDate(LocalDate.now().plusDays(2));
-        dto1.setPrice(new BigDecimal("2000"));
-        dto1.setStartingDate(LocalDate.now());
-        dto1.setTransportCompanyId(company.getId());
-        dto1.setVehicleId(truck.getId());
-        dto1.setWeightInKilograms(new BigDecimal("5000"));
-        dto1.setLengthInCentimeters(200);
-        dto1.setWidthInCentimeters(150);
-        dto1.setHeightInCentimeters(100);
-        dto1.setDescription("Cargo 1");
-        service.create(dto1);
-
-        TransportCargoServiceCreateDTO dto2 = new TransportCargoServiceCreateDTO();
-        dto2.setClientId(client.getId());
-        dto2.setDestinationId(destination.getId());
-        dto2.setDriverId(driver.getId());
-        dto2.setEndingDate(LocalDate.now().plusDays(3));
-        dto2.setPrice(new BigDecimal("2500"));
-        dto2.setStartingDate(LocalDate.now().plusDays(1));
-        dto2.setTransportCompanyId(company.getId());
-        dto2.setVehicleId(truck.getId());
-        dto2.setWeightInKilograms(new BigDecimal("6000"));
-        dto2.setLengthInCentimeters(220);
-        dto2.setWidthInCentimeters(160);
-        dto2.setHeightInCentimeters(110);
-        dto2.setDescription("Cargo 2");
-        service.create(dto2);
-
-        Map<Long, BigDecimal> weights = service.getTotalCargoWeightPerDriver();
-        assertEquals(1, weights.size());
-        assertEquals(new BigDecimal("11000.00"), weights.get(driver.getId()));
-    }
 
     // Error Cases
     @Test
@@ -661,11 +616,6 @@ public class TransportCargoServiceServiceTests {
         assertTrue(result.isEmpty());
     }
 
-    @Test
-    void getTotalCargoWeightPerDriver_NoServices_ShouldReturnEmptyMap() {
-        Map<Long, BigDecimal> weights = service.getTotalCargoWeightPerDriver();
-        assertTrue(weights.isEmpty());
-    }
 
     @Test
     void getByCompany_InvalidPage_ShouldReturnEmptyList() {
