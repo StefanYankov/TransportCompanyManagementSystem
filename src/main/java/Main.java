@@ -16,6 +16,10 @@ import data.models.transportservices.Destination;
 import data.models.transportservices.TransportCargoService;
 
 import data.models.transportservices.TransportPassengersService;
+import data.models.transportservices.TransportService;
+import data.models.vehicles.Bus;
+import data.models.vehicles.Truck;
+import data.models.vehicles.Van;
 import data.models.vehicles.Vehicle;
 import data.repositories.GenericRepository;
 import data.repositories.IGenericRepository;
@@ -27,40 +31,41 @@ import jakarta.validation.Validator;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import services.data.dto.transportservices.TransportPassengersServiceCreateDTO;
-import services.data.dto.transportservices.TransportPassengersServiceViewDTO;
-import services.data.mapping.mappers.DriverMapper;
-import services.data.mapping.mappers.QualificationMapper;
-import services.data.mapping.mappers.TransportCompanyMapper;
-//import services.services.DriverService;
-//import services.services.QualificationService;
-//import services.services.TransportCompanyService;
-import services.data.mapping.mappers.TransportPassengersServiceMapper;
-import services.services.contracts.IDriverService;
-import services.services.contracts.IQualificationService;
-import services.services.contracts.ITransportCompanyService;
+
+import services.data.mapping.mappers.*;
+import services.services.*;
+import services.services.QualificationService;
+import services.services.TransportCompanyService;
+import services.services.contracts.*;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
 
-        // Initialize SessionFactory and ExecutorService
+        // ## Initialize SessionFactory
         SessionFactory sessionFactory = SessionFactoryUtil.getSessionFactory();
+
+        // ## Initiate utility classes
+
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
 
         // ## Initialize repositories
         IGenericRepository<Employee, Long> employeeRepository =
-                new GenericRepository<>(sessionFactory,  Employee.class);
+                new GenericRepository<>(sessionFactory, Employee.class);
         IGenericRepository<TransportCompany, Long> companyRepository =
                 new GenericRepository<>(sessionFactory, TransportCompany.class);
         IGenericRepository<Qualification, Long> qualificationRepository =
                 new GenericRepository<>(sessionFactory, Qualification.class);
         IGenericRepository<Vehicle, Long> vehicleRepository =
                 new GenericRepository<>(sessionFactory, Vehicle.class);
+        IGenericRepository<TransportService, Long> transportServiceRepository =
+                new GenericRepository<>(sessionFactory, TransportService.class);
         IGenericRepository<TransportCargoService, Long> cargoServiceRepository =
                 new GenericRepository<>(sessionFactory, TransportCargoService.class);
         IGenericRepository<TransportPassengersService, Long> passengerServiceRepository =
@@ -73,6 +78,11 @@ public class Main {
                 = new GenericRepository<>(sessionFactory, Client.class);
         IGenericRepository<Destination, Long> destinationRepository =
                 new GenericRepository<>(sessionFactory, Destination.class);
+        IGenericRepository<Truck, Long> truckRepository = new GenericRepository<>(sessionFactory, Truck.class);
+        IGenericRepository<Bus, Long> busRepository = new GenericRepository<>(sessionFactory, Bus.class);
+        IGenericRepository<Van, Long> vanRepository = new GenericRepository<>(sessionFactory, Van.class);
+
+        // Initialize repositories ends ##
 
         // ## Data seeding
         Gson gson = new GsonBuilder()
@@ -82,86 +92,91 @@ public class Main {
                 .create();
 
         // Load JSON from resources;
-        String qualificationJsonFilePath;
-        String companiesJsonFilePath;
-        try {
-            qualificationJsonFilePath = Objects.requireNonNull(
-                    Main.class.getClassLoader().getResource("data/data_qualifications.json"),
-                    "Qualifications JSON file not found in resources"
-            ).getPath();
-            companiesJsonFilePath = Objects.requireNonNull(
-                    Main.class.getClassLoader().getResource("data/companies.json"),
-                    "Companies JSON file not found in resources"
-            ).getPath();
-        } catch (NullPointerException e) {
-            logger.error("Failed to load JSON resources: {}", e.getMessage());
-            return;
-        }
+        String qualificationJsonFilePath = "data/data_qualifications.json";
 
         ISeeder<Qualification, Long> qualificationSeeder =
-                new GenericSeeder<>(qualificationRepository, qualificationJsonFilePath, Qualification.class, gson);
-        ISeeder<TransportCompany, Long> companiesSeeder =
-                new GenericSeeder<>(companyRepository, companiesJsonFilePath, TransportCompany.class, gson);
+                new GenericSeeder<>(qualificationRepository, qualificationJsonFilePath, Qualification.class, gson, validator);
 
         try {
             qualificationSeeder.seed();
             logger.info("Initial seeding for {} completed successfully", Qualification.class.getName());
         } catch (Exception e) {
-            logger.error("Seeding failed due to {}", e.getMessage() );
+            logger.error("Seeding failed due to {}", e.getMessage());
         }
 
+        String companiesJsonFilePath = "data/companies.json";
+        ISeeder<TransportCompany, Long> companiesSeeder =
+                new GenericSeeder<>(companyRepository, companiesJsonFilePath, TransportCompany.class, gson, validator);
         try {
             companiesSeeder.seed();
             logger.info("Initial seeding for {} completed successfully", TransportCompany.class.getName());
         } catch (Exception e) {
-            logger.error("Seeding failed due to {}", e.getMessage() );
+            logger.error("Seeding failed due to {}", e.getMessage());
         }
 
 
-        // seeding ends ##
+        // ## Initialize mappers
 
-
-        // ## Initiate utility classes
-        // 1. DTO validations
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-
-        // 2. Mappers
-        DriverMapper driveMapper = new DriverMapper(companyRepository,dispatcherRepository,qualificationRepository);
-        TransportCompanyMapper companyMapper = new TransportCompanyMapper();
+        BusMapper busMapper = new BusMapper(companyRepository);
+        ClientMapper clientMapper = new ClientMapper();
+        DestinationMapper destinationMapper = new DestinationMapper();
+        DispatcherMapper dispatcherMapper = new DispatcherMapper(companyRepository, driverRepository);
+        DriverMapper driverMapper = new DriverMapper(companyRepository, dispatcherRepository, qualificationRepository);
+        EmployeeMapper employeeMapper = new EmployeeMapper();
         QualificationMapper qualificationMapper = new QualificationMapper();
-        TransportPassengersServiceMapper mapper = new TransportPassengersServiceMapper(companyRepository, clientRepository, driverRepository, vehicleRepository, destinationRepository);
+        TransportCargoServiceMapper cargoServiceMapper = new TransportCargoServiceMapper(companyRepository, clientRepository, driverRepository, destinationRepository, vehicleRepository);
+        TransportCompanyMapper companyMapper = new TransportCompanyMapper();
+        TransportPassengersServiceMapper passengersServiceMapper = new TransportPassengersServiceMapper(companyRepository, clientRepository, driverRepository, vehicleRepository, destinationRepository);
+        TransportServiceMapper transportServiceMapper = new TransportServiceMapper(companyRepository, clientRepository, driverRepository, destinationRepository, vehicleRepository);
+        TruckMapper truckMapper = new TruckMapper(companyRepository);
+        VanMapper vanMapper = new VanMapper(companyRepository);
+        VehicleMapper vehicleMapper = new VehicleMapper(companyRepository);
+
+        // Initialize mappers ends ##
 
         // ## Initiate serviceLayer
-        // Test mapping a CreateDTO to entity
-        TransportPassengersServiceCreateDTO createDto = new TransportPassengersServiceCreateDTO();
-        createDto.setTransportCompanyId(1L);
-        createDto.setVehicleId(2L);
-        createDto.setDestinationId(3L);
-        createDto.setDriverId(4L);
-        createDto.setClientId(5L);
-        createDto.setPrice(new java.math.BigDecimal("1000.00"));
-        createDto.setStartingDate(java.time.LocalDate.now());
-        createDto.setEndingDate(java.time.LocalDate.now().plusDays(1));
-        createDto.setNumberOfPassengers(6);
 
-        TransportPassengersService entity = mapper.toEntity(createDto);
-        System.out.println("Entity created: " + entity.getNumberOfPassengers());
-
-        // Test mapping entity to ViewDTO
-        TransportPassengersServiceViewDTO viewDto = mapper.toViewDTO(entity);
-        System.out.println("View DTO created: " + viewDto.getNumberOfPassengers());
-
-        // If we get here without exceptions, ModelMapper is working standalone
-        System.out.println("ModelMapper test completed successfully!");
+        ITransportCompanyService companyService =
+                new TransportCompanyService(companyRepository, employeeRepository, vehicleRepository, transportServiceRepository, companyMapper, employeeMapper, vehicleMapper, transportServiceMapper, clientMapper);
+        IClientService clientService =
+                new ClientService(clientRepository, transportServiceRepository, clientMapper, transportServiceMapper);
+        IDispatcherService dispatcherService =
+                new DispatcherService(dispatcherRepository, driverRepository, dispatcherMapper, driverMapper);
+        IDriverService driverService =
+                new DriverService(driverRepository, companyRepository, dispatcherRepository, cargoServiceRepository, passengerServiceRepository, qualificationRepository, driverMapper, cargoServiceMapper, passengersServiceMapper);
+        IQualificationService qualificationService =
+                new QualificationService(qualificationRepository, driverRepository, qualificationMapper, driverMapper);
+        ITransportCargoServiceService cargoServiceService =
+                new TransportCargoServiceService(cargoServiceRepository, companyRepository, clientRepository, driverRepository, destinationRepository, vehicleRepository);
+        ITransportPassengersServiceService passengerServiceService =
+                new TransportPassengersServiceService(passengerServiceRepository, passengersServiceMapper);
+        IDestinationService destinationService =
+                new DestinationService(destinationRepository, transportServiceRepository, destinationMapper, transportServiceMapper);
+        ITruckService truckService =
+                new TruckService(truckRepository, companyRepository, cargoServiceRepository, truckMapper, cargoServiceMapper);
+        IBusService busService =
+                new BusService(busRepository, companyRepository, passengerServiceRepository, busMapper, passengersServiceMapper);
+        IVanService vanService =
+                new VanService(vanRepository, companyRepository, passengerServiceRepository, vanMapper, passengersServiceMapper);
 
         // ## Initiate engine
-       // IEngine engine = new ConsoleEngine(validator, transportCompanyService, driverService, qualificationService);
-        //engine.start();
+        IEngine engine = new ConsoleEngine(validator,
+                companyService,
+                clientService,
+                dispatcherService,
+                driverService,
+                qualificationService,
+                cargoServiceService,
+                passengerServiceService,
+                destinationService,
+                truckService,
+                busService,
+                vanService);
 
+        // ## Start Engine
+        engine.start();
 
-        // Clean up resources (Hibernate session factory)
+        // ## Clean up resources (Hibernate session factory)
         SessionFactoryUtil.shutdown();
-
     }
 }

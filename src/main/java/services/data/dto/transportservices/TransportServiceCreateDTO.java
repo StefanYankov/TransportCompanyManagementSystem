@@ -3,10 +3,16 @@ package services.data.dto.transportservices;
 import data.common.ModelValidation;
 import jakarta.validation.constraints.*;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public abstract class TransportServiceCreateDTO {
+public abstract class TransportServiceCreateDTO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @NotNull(message = ModelValidation.ID_REQUIRED)
     private Long transportCompanyId;
 

@@ -31,7 +31,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
 public class TransportPassengersServiceServiceTests {
     private SessionFactory sessionFactory;
     private IGenericRepository<TransportPassengersService, Long> transportServiceRepo;

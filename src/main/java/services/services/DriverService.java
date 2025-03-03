@@ -15,15 +15,13 @@ import services.common.Constants;
 import services.data.dto.employees.DriverCreateDTO;
 import services.data.dto.employees.DriverUpdateDTO;
 import services.data.dto.employees.DriverViewDTO;
-import services.data.dto.transportservices.TransportCargoServiceViewDTO;
-import services.data.dto.transportservices.TransportPassengersServiceViewDTO;
+import services.data.dto.transportservices.TransportServiceViewDTO;
 import services.data.mapping.mappers.DriverMapper;
 import services.data.mapping.mappers.TransportCargoServiceMapper;
 import services.data.mapping.mappers.TransportPassengersServiceMapper;
 import services.services.contracts.IDriverService;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,7 +61,9 @@ public class DriverService implements IDriverService {
         this.passengersServiceMapper = passengersServiceMapper;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DriverViewDTO create(DriverCreateDTO dto) {
         if (dto == null) {
@@ -82,7 +82,9 @@ public class DriverService implements IDriverService {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DriverViewDTO update(DriverUpdateDTO dto) {
         if (dto == null || dto.getId() == null) {
@@ -104,7 +106,9 @@ public class DriverService implements IDriverService {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void delete(Long id) {
         if (id == null) {
@@ -123,7 +127,9 @@ public class DriverService implements IDriverService {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DriverViewDTO getById(Long id, String... fetchRelations) {
         if (id == null) {
@@ -146,7 +152,9 @@ public class DriverService implements IDriverService {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<DriverViewDTO> getAll(int page, int size, String orderBy, boolean ascending, String... fetchRelations) {
         logger.debug("Retrieving all {}: page={}, size={}, orderBy={}, ascending={}, fetchRelations={}",
@@ -164,7 +172,9 @@ public class DriverService implements IDriverService {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<DriverViewDTO> getDriversByQualification(String qualificationName) {
         logger.debug("Retrieving {} with qualification: {}", Constants.DRIVER, qualificationName);
@@ -179,7 +189,9 @@ public class DriverService implements IDriverService {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<DriverViewDTO> getDriversSortedBySalary(boolean ascending, String... fetchRelations) {
         logger.debug("Retrieving {} sorted by salary, ascending: {}, fetchRelations: {}",
@@ -196,7 +208,9 @@ public class DriverService implements IDriverService {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<Long, Integer> getDriverTransportCounts() {
         logger.debug("Retrieving transport counts for all {}", Constants.DRIVER);
@@ -218,7 +232,9 @@ public class DriverService implements IDriverService {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BigDecimal getRevenueByDriver(Long driverId) {
         logger.debug("Calculating revenue for {} ID: {}", Constants.DRIVER, driverId);
@@ -244,7 +260,9 @@ public class DriverService implements IDriverService {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<Long, Integer> getDriverTripCounts(boolean orderByCount, boolean ascending, int page, int size) {
         logger.debug("Retrieving trip counts for all drivers with orderByCount: {}, ascending: {}, page: {}, size: {}",
@@ -260,7 +278,9 @@ public class DriverService implements IDriverService {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<DriverViewDTO> getDriversByDispatcher(Long dispatcherId) {
         if (dispatcherId == null) {
@@ -278,7 +298,9 @@ public class DriverService implements IDriverService {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<DriverViewDTO> getDriversByCompany(Long companyId, int page, int size, String orderBy, boolean ascending, String... fetchRelations) {
         if (companyId == null) {
@@ -305,9 +327,11 @@ public class DriverService implements IDriverService {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public List<Object> getTransportServicesForDriver(Long driverId, int page, int size) {
+    public List<TransportServiceViewDTO> getTransportServicesForDriver(Long driverId, int page, int size) {
         if (driverId == null) {
             logger.error("Cannot retrieve transport services: Driver ID is null");
             throw new IllegalArgumentException("Driver ID must not be null");
@@ -323,7 +347,7 @@ public class DriverService implements IDriverService {
             List<TransportCargoService> cargoServices = cargoRepo.findByCriteria(conditions, "startingDate", true, page, size);
             List<TransportPassengersService> passengerServices = passengersRepo.findByCriteria(conditions, "startingDate", true, page, size);
 
-            List<Object> combinedServices = new ArrayList<>();
+            List<TransportServiceViewDTO> combinedServices = new ArrayList<>();
             combinedServices.addAll(cargoServices.stream()
                     .map(cargoServiceMapper::toViewDTO)
                     .toList());
@@ -331,21 +355,10 @@ public class DriverService implements IDriverService {
                     .map(passengersServiceMapper::toViewDTO)
                     .toList());
 
-            // Sort by startingDate manually since we’re combining lists
-            combinedServices.sort((a, b) -> {
-                LocalDate dateA = a instanceof TransportCargoServiceViewDTO ?
-                        ((TransportCargoServiceViewDTO) a).getStartingDate() :
-                        ((TransportPassengersServiceViewDTO) a).getStartingDate();
-                LocalDate dateB = b instanceof TransportCargoServiceViewDTO ?
-                        ((TransportCargoServiceViewDTO) b).getStartingDate() :
-                        ((TransportPassengersServiceViewDTO) b).getStartingDate();
-                return dateA.compareTo(dateB);
-            });
-
-            // Apply pagination
+            // Apply pagination (already handled by repository, but kept for clarity)
             int fromIndex = page * size;
             int toIndex = Math.min(fromIndex + size, combinedServices.size());
-            List<Object> paginatedServices = fromIndex < combinedServices.size() ?
+            List<TransportServiceViewDTO> paginatedServices = fromIndex < combinedServices.size() ?
                     combinedServices.subList(fromIndex, toIndex) :
                     Collections.emptyList();
 

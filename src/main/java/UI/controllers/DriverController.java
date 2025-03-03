@@ -1,181 +1,334 @@
 package UI.controllers;
 
-import data.repositories.exceptions.RepositoryException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import services.data.dto.companies.TransportCompanyViewDTO;
 import services.data.dto.employees.DriverCreateDTO;
 import services.data.dto.employees.DriverUpdateDTO;
 import services.data.dto.employees.DriverViewDTO;
-import services.data.dto.employees.QualificationViewDTO;
+import services.data.dto.transportservices.TransportServiceViewDTO;
 import services.services.contracts.IDriverService;
-import services.services.contracts.IQualificationService;
-import services.services.contracts.ITransportCompanyService;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class DriverController {
-
+    private final IDriverService service;
     private final Validator validator;
-    private final IDriverService driverService;
-    private final IQualificationService qualificationService;
-    private final ITransportCompanyService transportCompanyService;
+    private final Scanner scanner;
 
-    public DriverController(Validator validator, IDriverService driverService, IQualificationService qualificationService,
-                            ITransportCompanyService transportCompanyService) {
+    public DriverController(IDriverService service, Validator validator, Scanner scanner) {
+        this.service = service;
         this.validator = validator;
-        this.driverService = driverService;
-        this.qualificationService = qualificationService;
-        this.transportCompanyService = transportCompanyService;
+        this.scanner = scanner;
     }
 
-    public void run() {
+    public void handleMenu() {
+        while (true) {
+            displayMenu();
+            int choice = getUserChoice();
+            if (choice == 0) break;
+            processChoice(choice);
+        }
+    }
 
-//        // ## Create Driver asynchronously
-//        DriverCreateDTO createDto = new DriverCreateDTO();
-//        createDto.setFirstName("John");
-//        createDto.setFamilyName("Doe");
-//        createDto.setSalary(new BigDecimal("50000"));
-//        TransportCompanyViewDTO company = transportCompanyService.getById(1L); // Use TransportCompanyService
-//        createDto.setTransportCompany(company);
-//        Set<QualificationViewDTO> qualifications = new HashSet<>();
-//        qualifications.add(qualificationService.getById(1L)); // Use QualificationService
-//        qualifications.add(qualificationService.getById(2L));
-//        createDto.setQualifications(qualifications);
-//
-//        Set<ConstraintViolation<DriverCreateDTO>> createViolations = validator.validate(createDto);
-//        if (!createViolations.isEmpty()) {
-//            System.out.println("Validation errors occurred during create:");
-//            for (ConstraintViolation<DriverCreateDTO> violation : createViolations) {
-//                System.out.println("Field: " + violation.getPropertyPath() + " - " + violation.getMessage());
-//            }
-//        } else {
-//            try {
-//                DriverViewDTO driver = driverService.createAsync(createDto).get();
-//                Long driverId = driver.getId();
-//                System.out.println("Created driver: " + driver.getFirstName() + " " + driver.getFamilyName() + " (ID: " + driverId + ")");
-//
-//                // 2. Update the driver asynchronously
-//                DriverUpdateDTO updateDto = new DriverUpdateDTO();
-//                updateDto.setId(driverId);
-//                updateDto.setFirstName("Johnny");
-//                updateDto.setFamilyName("Doe");
-//                updateDto.setSalary(new BigDecimal("55000"));
-//                updateDto.setTransportCompanyId(company.getId());
-//                updateDto.setQualificationIds(Set.of(1L, 3L));
-//
-//                Set<ConstraintViolation<DriverUpdateDTO>> updateViolations = validator.validate(updateDto);
-//                if (!updateViolations.isEmpty()) {
-//                    System.out.println("Validation errors occurred during update:");
-//                    for (ConstraintViolation<DriverUpdateDTO> violation : updateViolations) {
-//                        System.out.println("Field: " + violation.getPropertyPath() + " - " + violation.getMessage());
-//                    }
-//                } else {
-//                    DriverViewDTO updatedDriver = driverService.updateAsync(updateDto).get();
-//                    System.out.println("Updated driver: " + updatedDriver.getFirstName() + " " + updatedDriver.getFamilyName() + " (ID: " + updatedDriver.getId() + ")");
-//                }
-//
-//                // 3. Get by ID (valid)
-//                DriverViewDTO fetchedDriver = driverService.getById(driverId);
-//                if (fetchedDriver != null) {
-//                    System.out.println("Fetched driver: " + fetchedDriver.getFirstName() + " " + fetchedDriver.getFamilyName() + " (ID: " + fetchedDriver.getId() + ")");
-//                } else {
-//                    System.out.println("Driver with ID " + driverId + " not found.");
-//                }
-//
-//                // 4. Get by ID (invalid) with try-catch
-//                try {
-//                    DriverViewDTO invalidDriver = driverService.getById(999L);
-//                    System.out.println("Unexpectedly fetched driver with invalid ID: " + invalidDriver.getId());
-//                } catch (RepositoryException e) {
-//                    System.out.println("Expected error for invalid ID 999: " + e.getMessage());
-//                }
-//
-//                // 5. Get all drivers
-//                    // creating a second driver for the
-//                DriverCreateDTO driverDto2 = new DriverCreateDTO();
-//                driverDto2.setFirstName("Dala");
-//                driverDto2.setFamilyName("Vera");
-//                driverDto2.setSalary(new BigDecimal("2500"));
-//                driverDto2.setTransportCompany(company); // use same company as in #1
-//                driverDto2.setQualifications(qualifications);// Use same qualifications as in #1
-//
-//                Set<ConstraintViolation<DriverCreateDTO>> createViolations2 = validator.validate(driverDto2);
-//                if (!createViolations.isEmpty()) {
-//                    System.out.println("Validation errors occurred during create:");
-//                    for (ConstraintViolation<DriverCreateDTO> violation : createViolations2) {
-//                        System.out.println("Field: " + violation.getPropertyPath() + " - " + violation.getMessage());
-//                    }
-//                } else {
-//                    DriverViewDTO driver2 = driverService.createAsync(createDto).get();
-//                    System.out.println("Created driver: " + driver.getFirstName() + " " + driver.getFamilyName() + " (ID: " + driver2.getId() + ")");
-//                }
-//
-//                List<DriverViewDTO> getAllDrivers = driverService.getAll(0, 10, "familyName", true);
-//                System.out.println("All drivers:");
-//                getAllDrivers.forEach(d -> System.out.println(d.getFirstName() + " " + d.getFamilyName() + " (ID: " + d.getId() + ")"));
-//
-//                // 6. Delete the driver and verify
-//                driverService.delete(driverId);
-//                System.out.println("Deleted driver with ID: " + driverId);
-//
-//                try {
-//                    DriverViewDTO deletedDriver = driverService.getById(driverId);
-//                    System.out.println("Unexpectedly fetched deleted driver: " + deletedDriver.getId());
-//                } catch (RepositoryException e) {
-//                    System.out.println("Confirmed deletion - driver with ID " + driverId + " not found: " + e.getMessage());
-//                }
+    private void displayMenu() {
+        System.out.println(System.lineSeparator() + "--- Driver Management ---" + System.lineSeparator());
+        System.out.println("1. List all drivers");
+        System.out.println("2. Add a new driver");
+        System.out.println("3. Update a driver");
+        System.out.println("4. Delete a driver");
+        System.out.println("5. Get drivers by qualification");
+        System.out.println("6. Get drivers sorted by salary");
+        System.out.println("7. Get driver transport counts");
+        System.out.println("8. Get revenue by driver");
+        System.out.println("9. Get driver trip counts");
+        System.out.println("10. Get drivers by dispatcher");
+        System.out.println("11. Get drivers by company");
+        System.out.println("12. Get transport services for driver");
+        System.out.println("0. Back to main menu");
+        System.out.print("Enter your choice: ");
+    }
 
-        // 7. Display total count cargo services by driver
-//                    TransportCargoService cargo1 = new TransportCargoService();
-//                    cargo1.setTransportCompany(company);
-//                    cargo1.setPrice(new BigDecimal("1000"));
-//                    cargo1.setStartingDate(LocalDate.now());
-//                    cargo1.setWeightInKilograms(BigDecimal.valueOf(25));
-//                    cargo1.setLengthInCentimeters(50);
-//                    cargo1.setWidthInCentimeters(25);
-//                    cargo1.setHeightInCentimeters(25);
-//                    cargo1.setDriver(driver1);
-//                    cargoRepo.create(cargo1);
-//
-//                    TransportCargoService cargo2 = new TransportCargoService();
-//                    cargo2.setTransportCompany(company);
-//                    cargo2.setPrice(new BigDecimal("2000"));
-//                    cargo2.setStartingDate(LocalDate.now());
-//                    cargo2.setWeightInKilograms(BigDecimal.valueOf(25));
-//                    cargo2.setLengthInCentimeters(50);
-//                    cargo2.setWidthInCentimeters(25);
-//                    cargo2.setHeightInCentimeters(25);
-//                    cargo2.setDriver(driver1);
-//                    cargoRepo.create(cargo2);
-//
-//                    TransportCargoService cargo3 = new TransportCargoService();
-//                    cargo3.setTransportCompany(company);
-//                    cargo3.setPrice(new BigDecimal("1500"));
-//                    cargo3.setStartingDate(LocalDate.now());
-//                    cargo3.setWeightInKilograms(BigDecimal.valueOf(25));
-//                    cargo3.setLengthInCentimeters(50);
-//                    cargo3.setWidthInCentimeters(25);
-//                    cargo3.setHeightInCentimeters(25);
-//                    cargo3.setDriver(driver2);
-//                    cargoRepo.create(cargo3);
+    private int getUserChoice() {
+        try {
+            return Integer.parseInt(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
 
-//                    // Get trip counts with pagination (page 0, size 2, sorted by count descending)
-//                    Map<Long, Integer> tripCounts = driverService.getDriverTripCounts(true, false, 0, 2);
-//                    // Display results
-//                    System.out.println("Driver Trip Counts (most trips first, page 0, size 2):");
-//                    // TODO: for loop to display
-//
-//            } catch (InterruptedException | ExecutionException e) {
-//                System.err.println("Error during async operation: " + e.getMessage());
-//            } catch (RepositoryException e) {
-//                System.err.println("Repository error: " + e.getMessage());
-//            }
-//    }
+    private void processChoice(int choice) {
+        try {
+            switch (choice) {
+                case 1:
+                    listAllDrivers();
+                    break;
+                case 2:
+                    addNewDriver();
+                    break;
+                case 3:
+                    updateDriver();
+                    break;
+                case 4:
+                    deleteDriver();
+                    break;
+                case 5:
+                    getDriversByQualification();
+                    break;
+                case 6:
+                    getDriversSortedBySalary();
+                    break;
+                case 7:
+                    getDriverTransportCounts();
+                    break;
+                case 8:
+                    getRevenueByDriver();
+                    break;
+                case 9:
+                    getDriverTripCounts();
+                    break;
+                case 10:
+                    getDriversByDispatcher();
+                    break;
+                case 11:
+                    getDriversByCompany();
+                    break;
+                case 12:
+                    getTransportServicesForDriver();
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } catch (Exception e) {
+            System.out.println("An error occurred: " + e.getMessage());
+        }
+    }
+
+    private void listAllDrivers() {
+        List<DriverViewDTO> drivers = service.getAll(0, Integer.MAX_VALUE, "firstName", true);
+        if (drivers.isEmpty()) {
+            System.out.println("No drivers found.");
+        } else {
+            drivers.forEach(System.out::println);
+        }
+    }
+
+    private void addNewDriver() {
+        System.out.print("Enter first name: ");
+        String firstName = scanner.nextLine().trim();
+
+        System.out.print("Enter family name: ");
+        String familyName = scanner.nextLine().trim();
+
+        System.out.print("Enter salary: ");
+        String salaryInput = scanner.nextLine().trim();
+        BigDecimal salary = new BigDecimal(salaryInput);
+
+        System.out.print("Enter transport company ID: ");
+        Long companyId = Long.parseLong(scanner.nextLine().trim());
+
+        System.out.print("Enter dispatcher ID (optional, leave blank): ");
+        Long dispatcherId = getLongInput("Enter dispatcher ID (optional, leave blank): ");
+
+        System.out.print("Enter qualification IDs (comma-separated, optional): ");
+        String qualsInput = scanner.nextLine().trim();
+
+        Set<Long> qualificationIds;
+        if (qualsInput.isEmpty()) {
+            qualificationIds = null;
+        } else {
+            qualificationIds = Arrays
+                    .stream(qualsInput.split(","))
+                    .map(Long::parseLong)
+                    .collect(Collectors.toSet());
+        }
+
+        DriverCreateDTO createDTO = new DriverCreateDTO();
+        createDTO.setFirstName(firstName);
+        createDTO.setFamilyName(familyName);
+        createDTO.setSalary(salary);
+        createDTO.setTransportCompanyId(companyId);
+        createDTO.setDispatcherId(dispatcherId);
+        createDTO.setQualificationIds(qualificationIds);
+
+        Set<ConstraintViolation<DriverCreateDTO>> violations =
+                validator.validate(createDTO);
+
+        if (!violations.isEmpty()) {
+            System.out.println("Validation errors:");
+            for (ConstraintViolation<DriverCreateDTO> violation : violations) {
+                System.out.println(violation.getPropertyPath() + ": " + violation.getMessage());
+            }
+            return;
+        }
+
+        DriverViewDTO created = service.create(createDTO);
+        System.out.println("Driver created with ID: " + created.getId());
+    }
+
+    private void updateDriver() {
+        Long id = getLongInput("Enter driver ID to update: ");
+        DriverViewDTO driver = service.getById(id);
+
+        if (driver == null) {
+            System.out.println("Driver not found.");
+            return;
+        }
+
+        System.out.print("Enter new first name (leave blank to keep '" + driver.getFirstName() + "'): ");
+        String firstName = scanner.nextLine().trim();
+
+        System.out.print("Enter new family name (leave blank to keep '" + driver.getFamilyName() + "'): ");
+        String familyName = scanner.nextLine().trim();
+
+        System.out.print("Enter new salary (leave blank to keep " + driver.getSalary() + "): ");
+        String salaryInput = scanner.nextLine().trim();
+
+        System.out.print("Enter new transport company ID (leave blank to keep " + driver.getTransportCompanyId() + "): ");
+        Long companyId = getLongInput("Enter new transport company ID (leave blank to keep " + driver.getTransportCompanyId() + "): ");
+
+        System.out.print("Enter new dispatcher ID (leave blank to keep " + (driver.getDispatcherId() != null ? driver.getDispatcherId() : "none") + "): ");
+        Long dispatcherId = getLongInput("Enter new dispatcher ID (leave blank to keep " + (driver.getDispatcherId() != null ? driver.getDispatcherId() : "none") + "): ");
+
+        System.out.print("Enter new qualification IDs (comma-separated, leave blank to keep current): ");
+        String qualsInput = scanner.nextLine().trim();
+
+        DriverUpdateDTO updateDTO = new DriverUpdateDTO();
+        updateDTO.setId(id);
+        updateDTO.setFirstName(driver.getFirstName());
+        updateDTO.setFamilyName(driver.getFamilyName());
+        updateDTO.setSalary(driver.getSalary());
+        updateDTO.setTransportCompanyId(driver.getTransportCompanyId());
+        updateDTO.setDispatcherId(driver.getDispatcherId());
+        updateDTO.setQualificationIds(driver.getQualificationIds());
+
+        if (!firstName.isEmpty()){
+            updateDTO.setFirstName(firstName);
+        }
+
+        if (!familyName.isEmpty()){
+            updateDTO.setFamilyName(familyName);
+        }
+
+        if (!salaryInput.isEmpty()){
+            updateDTO.setSalary(new BigDecimal(salaryInput));
+        }
+
+        if (companyId != null) {
+            updateDTO.setTransportCompanyId(companyId);
+        }
+
+        if (dispatcherId != null){
+            updateDTO.setDispatcherId(dispatcherId);
+        }
+        if (!qualsInput.isEmpty()) {
+            Set<Long> qualificationIds = Arrays
+                    .stream(qualsInput.split(","))
+                    .map(Long::parseLong)
+                    .collect(Collectors.toSet());
+            updateDTO.setQualificationIds(qualificationIds);
+        }
+
+        Set<ConstraintViolation<DriverUpdateDTO>> violations = validator.validate(updateDTO);
+        if (!violations.isEmpty()) {
+            System.out.println("Validation errors:");
+            for (ConstraintViolation<DriverUpdateDTO> violation : violations) {
+                System.out.println(violation.getPropertyPath() + ": " + violation.getMessage());
+            }
+            return;
+        }
+
+        service.update(updateDTO);
+        System.out.println("Driver updated successfully.");
+    }
+
+    private void deleteDriver() {
+        Long id = getLongInput("Enter driver ID to delete: ");
+        service.delete(id);
+        System.out.println("Driver deleted.");
+    }
+
+    private void getDriversByQualification() {
+        System.out.print("Enter qualification name: ");
+        String qualName = scanner.nextLine().trim();
+        List<DriverViewDTO> drivers = service.getDriversByQualification(qualName);
+        if (drivers.isEmpty()) {
+            System.out.println("No drivers found.");
+        } else {
+            drivers.forEach(System.out::println);
+        }
+    }
+
+    private void getDriversSortedBySalary() {
+        System.out.print("Sort ascending? (yes/no): ");
+        boolean ascending = scanner.nextLine().trim().equalsIgnoreCase("yes");
+        List<DriverViewDTO> drivers = service.getDriversSortedBySalary(ascending);
+        if (drivers.isEmpty()) {
+            System.out.println("No drivers found.");
+        } else {
+            drivers.forEach(System.out::println);
+        }
+    }
+
+    private void getDriverTransportCounts() {
+        Map<Long, Integer> counts = service.getDriverTransportCounts();
+        counts.forEach((id, count) -> System.out.println("Driver ID " + id + ": " + count + " transports"));
+    }
+
+    private void getRevenueByDriver() {
+        Long id = getLongInput("Enter driver ID: ");
+        BigDecimal revenue = service.getRevenueByDriver(id);
+        System.out.println("Revenue: $" + revenue);
+    }
+
+    private void getDriverTripCounts() {
+        System.out.print("Sort by count? (yes/no): ");
+        boolean byCount = scanner.nextLine().trim().equalsIgnoreCase("yes");
+        System.out.print("Sort ascending? (yes/no): ");
+        boolean ascending = scanner.nextLine().trim().equalsIgnoreCase("yes");
+        Map<Long, Integer> counts = service.getDriverTripCounts(byCount, ascending, 0, Integer.MAX_VALUE);
+        counts.forEach((id, count) -> System.out.println("Driver ID " + id + ": " + count + " trips"));
+    }
+
+    private void getDriversByDispatcher() {
+        Long id = getLongInput("Enter dispatcher ID: ");
+        List<DriverViewDTO> drivers = service.getDriversByDispatcher(id);
+        if (drivers.isEmpty()) {
+            System.out.println("No drivers found.");
+        } else {
+            drivers.forEach(System.out::println);
+        }
+    }
+
+    private void getDriversByCompany() {
+        Long id = getLongInput("Enter company ID: ");
+        List<DriverViewDTO> drivers = service.getDriversByCompany(id, 0, Integer.MAX_VALUE, "firstName", true);
+        if (drivers.isEmpty()) {
+            System.out.println("No drivers found.");
+        } else {
+            drivers.forEach(System.out::println);
+        }
+    }
+
+    private void getTransportServicesForDriver() {
+        Long id = getLongInput("Enter driver ID: ");
+        List<TransportServiceViewDTO> services = service.getTransportServicesForDriver(id, 0, Integer.MAX_VALUE);
+        if (services.isEmpty()) {
+            System.out.println("No services found.");
+        } else {
+            services.forEach(System.out::println);
+        }
+    }
+
+    private Long getLongInput(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            try {
+                return Long.parseLong(scanner.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+            }
+        }
     }
 }

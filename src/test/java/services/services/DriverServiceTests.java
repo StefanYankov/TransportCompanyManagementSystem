@@ -19,6 +19,7 @@ import services.data.dto.employees.DriverUpdateDTO;
 import services.data.dto.employees.DriverViewDTO;
 import services.data.dto.transportservices.TransportCargoServiceViewDTO;
 import services.data.dto.transportservices.TransportPassengersServiceViewDTO;
+import services.data.dto.transportservices.TransportServiceViewDTO;
 import services.data.mapping.mappers.DriverMapper;
 import services.data.mapping.mappers.TransportCargoServiceMapper;
 import services.data.mapping.mappers.TransportPassengersServiceMapper;
@@ -496,7 +497,7 @@ public class DriverServiceTests {
         passengerService.setNumberOfPassengers(6);
         passengersRepo.create(passengerService);
 
-        List<Object> services = driverService.getTransportServicesForDriver(created.getId(), 0, 10);
+        List<TransportServiceViewDTO> services = driverService.getTransportServicesForDriver(created.getId(), 0, 10);
         assertEquals(2, services.size());
 
         Object firstService = services.getFirst();
@@ -520,7 +521,7 @@ public class DriverServiceTests {
         DriverCreateDTO dto = new DriverCreateDTO("Test", "Driver", new BigDecimal("50000"), company.getId(), null, Set.of());
         DriverViewDTO created = driverService.create(dto);
 
-        List<Object> services = driverService.getTransportServicesForDriver(created.getId(), 0, 10);
+        List<TransportServiceViewDTO> services = driverService.getTransportServicesForDriver(created.getId(), 0, 10);
         assertTrue(services.isEmpty());
     }
 
@@ -530,7 +531,7 @@ public class DriverServiceTests {
         DriverCreateDTO dto = new DriverCreateDTO("Test", "Driver", new BigDecimal("50000"), company.getId(), null, Set.of());
         DriverViewDTO created = driverService.create(dto);
 
-        List<Object> services = driverService.getTransportServicesForDriver(created.getId(), -1, 10);
+        List<TransportServiceViewDTO> services = driverService.getTransportServicesForDriver(created.getId(), -1, 10);
         assertTrue(services.isEmpty());
     }
 

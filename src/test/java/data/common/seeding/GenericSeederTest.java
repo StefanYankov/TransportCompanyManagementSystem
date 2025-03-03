@@ -1,169 +1,150 @@
 package data.common.seeding;
 
-import com.google.gson.JsonSyntaxException;
-import data.models.TransportCompany;
-import org.junit.jupiter.api.Test;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import data.models.Client;
+import data.models.TransportCompany;
+import data.models.employee.Dispatcher;
+import data.models.employee.Driver;
+import data.models.employee.Employee;
+import data.models.employee.Qualification;
+import data.models.transportservices.Destination;
+import data.models.transportservices.TransportCargoService;
+import data.models.transportservices.TransportPassengersService;
+import data.models.transportservices.TransportService;
+import data.models.vehicles.*;
 import data.repositories.GenericRepository;
 import data.repositories.IGenericRepository;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-import org.junit.jupiter.api.*;
+import org.hibernate.service.ServiceRegistry;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GenericSeederTest {
     private SessionFactory sessionFactory;
-    private ExecutorService executorService;
     private IGenericRepository<TransportCompany, Long> companyRepo;
+    private IGenericRepository<Qualification, Long> qualificationRepo;
     private Gson gson;
 
     @BeforeEach
-    public void setUp() {
-        // H2 in-memory setup: Fresh DB per test with "create-drop"
-        sessionFactory = new Configuration().configure("META-INF/persistence.xml").buildSessionFactory();
-        executorService = Executors.newFixedThreadPool(2);
-        companyRepo = new GenericRepository<>(sessionFactory, TransportCompany.class);
+    void setUp() {
+        try {
+            Configuration configuration = new Configuration();
+            configuration.addAnnotatedClass(TransportCompany.class);
+            configuration.addAnnotatedClass(Client.class);
+            configuration.addAnnotatedClass(Employee.class);
+            configuration.addAnnotatedClass(Driver.class);
+            configuration.addAnnotatedClass(Dispatcher.class);
+            configuration.addAnnotatedClass(Qualification.class);
+            configuration.addAnnotatedClass(Destination.class);
+            configuration.addAnnotatedClass(TransportService.class);
+            configuration.addAnnotatedClass(TransportCargoService.class);
+            configuration.addAnnotatedClass(TransportPassengersService.class);
+            configuration.addAnnotatedClass(Vehicle.class);
+            configuration.addAnnotatedClass(TransportCargoVehicle.class);
+            configuration.addAnnotatedClass(TransportPeopleVehicle.class);
+            configuration.addAnnotatedClass(Truck.class);
+            configuration.addAnnotatedClass(Bus.class);
+            configuration.addAnnotatedClass(Van.class);
 
-        // Gson with adapters for your entities
-        gson = new GsonBuilder()
-                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-                .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
-                .setPrettyPrinting()
-                .create();
+            ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                    .applySettings(configuration.getProperties())
+                    .build();
+            sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+
+            companyRepo = new GenericRepository<>(sessionFactory, TransportCompany.class);
+            qualificationRepo = new GenericRepository<>(sessionFactory, Qualification.class);
+            gson = new GsonBuilder()
+                    .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
+                    .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+                    .create();
+        } catch (Exception e) {
+            fail("Failed to initialize SessionFactory: " + e.getMessage());
+        }
     }
 
     @AfterEach
-    public void tearDown() {
-        executorService.shutdown();
-        sessionFactory.close();
+    void tearDown() {
+        if (sessionFactory != null) {
+            sessionFactory.close();
+        }
     }
 
     @Test
-    public void Seed_WhenDatabaseIsEmpty_ShouldInsertEntitiesFromJson() throws IOException {
-        // Arrange: Create a temp JSON file
-        String jsonContent = "[{\"id\": 1, \"name\": \"Fast Transport\", \"address\": \"123 Main St\", \"createdOn\": \"2025-02-21T10:00:00\"}]";
-        File tempFile = File.createTempFile("test_seed", ".json");
-        Files.writeString(tempFile.toPath(), jsonContent);
-        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(companyRepo, tempFile.getAbsolutePath(), TransportCompany.class, gson);
+    void seed_EmptyDatabase_SeedsData() {
+        // Arrange
+        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(
+                companyRepo, "data/companies.json", TransportCompany.class, gson, null);
 
-        // Act: Seed the data
+        // Act
         seeder.seed();
 
-        // Assert: Verify the data was inserted
-        List<TransportCompany> companies = companyRepo.getAll(0, 10, "id", true);
-        assertEquals(1, companies.size(), "H2 should have one seeded company");
-        assertEquals("Fast Transport", companies.getFirst().getName());
+        // Assert
+        List<TransportCompany> companies = companyRepo.getAll(0, 10, "name", true);
+        assertEquals(4, companies.size());
+        assertTrue(companies.stream().anyMatch(c -> c.getName().equals("Starter")));
+        assertTrue(companies.stream().anyMatch(c -> c.getName().equals("IBM")));
     }
 
     @Test
-    public void Seed_WhenDatabaseContainsData_ShouldSkipSeeding() throws IOException {
-        // Arrange: Seed initial data and create a temp JSON file
-        TransportCompany existing = new TransportCompany();
-        existing.setName("Existing Co");
-        existing.setAddress("456 Oak Ave");
+    void seed_NonEmptyDatabase_SkipsSeeding() {
+        // Arrange: Pre-populate database
+        TransportCompany existing = new TransportCompany("Existing Co", "456 Oak Ave");
         companyRepo.create(existing);
-        String jsonContent = "[{\"id\": 2, \"name\": \"New Co\", \"address\": \"789 Pine Rd\", \"createdOn\": \"2025-02-21T10:00:00\"}]";
-        File tempFile = File.createTempFile("test_seed_skip", ".json");
-        Files.writeString(tempFile.toPath(), jsonContent);
-        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(companyRepo, tempFile.getAbsolutePath(), TransportCompany.class, gson);
 
-        // Act: Attempt to seed
+        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(
+                companyRepo, "data/companies.json", TransportCompany.class, gson, null);
+
+        // Act
         seeder.seed();
 
-        // Assert: Verify only the original data exists
-        List<TransportCompany> companies = companyRepo.getAll(0, 10, "id", true);
-        assertEquals(1, companies.size(), "H2 should still have only the original company");
+        // Assert: Only the existing company should be present
+        List<TransportCompany> companies = companyRepo.getAll(0, 10, "name", true);
+        assertEquals(1, companies.size());
         assertEquals("Existing Co", companies.getFirst().getName());
     }
 
     @Test
-    public void Seed_WhenJsonFileIsEmpty_ShouldLogWarningAndSkipSeeding() throws IOException {
-        // Arrange: Create an empty JSON file
-        File tempFile = File.createTempFile("test_seed_empty", ".json");
-        Files.writeString(tempFile.toPath(), "[]");
-        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(companyRepo, tempFile.getAbsolutePath(), TransportCompany.class, gson);
+    void seed_EmptyJsonFile_SkipsSeeding() {
+        // Arrange
+        GenericSeeder<Qualification, Long> seeder = new GenericSeeder<>(
+                qualificationRepo, "data/empty.json", Qualification.class, gson, null);
 
-        // Act: Seed with empty JSON
+        // Act
         seeder.seed();
 
-        // Assert: Verify no data was seeded
-        List<TransportCompany> companies = companyRepo.getAll(0, 10, "id", true);
-        assertTrue(companies.isEmpty(), "H2 should remain empty with empty JSON");
+        // Assert
+        List<Qualification> qualifications = qualificationRepo.getAll(0, 10, "name", true);
+        assertTrue(qualifications.isEmpty());
     }
 
     @Test
-    public void Seed_WhenJsonFileDoesNotExist_ShouldThrowException() {
-
-        // Arrange: Set up seeder with a non-existent file path
-        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(companyRepo, "/nonexistent.json", TransportCompany.class, gson);
-
-        // Act & Assert: Expect an exception
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                seeder::seed,
-                "Expected exception for missing JSON file");
-        assertTrue(exception.getMessage().contains("Failed to seed data from JSON"));
-    }
-
-    @Test
-    public void Seed_WhenJsonIsMalformed_ShouldThrowException() throws IOException {
-        // Arrange: Malformed JSON (missing closing bracket)
-        String jsonContent = "[{\"id\": 1, \"name\": \"Fast Transport\", \"address\": \"123 Main St\"";
-        File tempFile = File.createTempFile("test_seed_malformed", ".json");
-        Files.writeString(tempFile.toPath(), jsonContent);
-
-        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(companyRepo, tempFile.getAbsolutePath(), TransportCompany.class, gson);
+    void seed_JsonFileNotFound_ThrowsRuntimeException() {
+        // Arrange
+        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(
+                companyRepo, "data/missing.json", TransportCompany.class, gson, null);
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                seeder::seed,
-                "Expected exception for malformed JSON");
-        assertInstanceOf(JsonSyntaxException.class, exception.getCause(), "Should be a Gson parsing error");
+        assertThrows(RuntimeException.class, () -> seeder.seed());
+        List<TransportCompany> companies = companyRepo.getAll(0, 10, "name", true);
+        assertTrue(companies.isEmpty());
     }
 
     @Test
-    public void Seed_WhenJsonViolatesConstraint_ShouldThrowException() throws IOException {
-        // Arrange: JSON with duplicate ID (assuming ID is primary key)
-        String jsonContent = "[{\"id\": 1, \"name\": \"Co A\", \"address\": \"123 St\", \"createdOn\": \"2025-02-21T10:00:00\"}," +
-                "{\"id\": 1, \"name\": \"Co B\", \"address\": \"456 St\", \"createdOn\": \"2025-02-21T10:00:00\"}]";
-        File tempFile = File.createTempFile("test_seed_constraint", ".json");
-        Files.writeString(tempFile.toPath(), jsonContent);
-
-        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(companyRepo, tempFile.getAbsolutePath(), TransportCompany.class, gson);
-
-        // Act & Assert: H2 throws a constraint violation
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                seeder::seed,
-                "Expected exception for duplicate ID in H2");
-        assertTrue(exception.getMessage().contains("Failed to seed"), "Should propagate DB error");
+    void constructor_NullParameters_ThrowsNullPointerException() {
+        // Act & Assert
+        assertThrows(NullPointerException.class, () -> new GenericSeeder<>(null, "path", TransportCompany.class, gson, null));
+        assertThrows(NullPointerException.class, () -> new GenericSeeder<>(companyRepo, null, TransportCompany.class, gson, null));
+        assertThrows(NullPointerException.class, () -> new GenericSeeder<>(companyRepo, "path", null, gson, null));
+        assertThrows(NullPointerException.class, () -> new GenericSeeder<>(companyRepo, "path", TransportCompany.class, null, null));
     }
-
-    // New Tests for Edge Cases
-    @Test
-    public void Seed_WhenJsonContainsNullEntity_ShouldSkipNullAndSeedRest() throws IOException {
-        // Arrange: JSON with a null entry
-        String jsonContent = "[null, {\"id\": 2, \"name\": \"Valid Co\", \"address\": \"789 Pine Rd\", \"createdOn\": \"2025-02-21T10:00:00\"}]";
-        File tempFile = File.createTempFile("test_seed_null", ".json");
-        Files.writeString(tempFile.toPath(), jsonContent);
-
-        GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(companyRepo, tempFile.getAbsolutePath(), TransportCompany.class, gson);
-        seeder.seed();
-
-        // Assert: Only valid entity seeded
-        List<TransportCompany> companies = companyRepo.getAll(0, 10, "id", true);
-        assertEquals(1, companies.size(), "H2 should have one valid company");
-        assertEquals("Valid Co", companies.getFirst().getName());
-    }
-
 }

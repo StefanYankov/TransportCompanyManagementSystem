@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 public class BusCreateDTO extends TransportPeopleVehicleCreateDTO {
 
     @NotNull(message = ModelValidation.RESTROOM_FLAG_IS_REQUIRED)
-    private boolean hasRestroom;
+    private Boolean hasRestroom;
 
     @NotNull(message = ModelValidation.LUGGAGE_CAPACITY_REQUIRED)
     @DecimalMin(value = ModelValidation.MINIMUM_ALLOWED_LUGGAGE_CAPACITY, message = ModelValidation.INVALID_MINIMUM_LUGGAGE_CAPACITY)
@@ -23,11 +23,11 @@ public class BusCreateDTO extends TransportPeopleVehicleCreateDTO {
         this.luggageCapacity = luggageCapacity;
     }
 
-    public boolean getHasRestroom() {
+    public Boolean getHasRestroom() {
         return hasRestroom;
     }
 
-    public void setHasRestroom(boolean hasRestroom) {
+    public void setHasRestroom(Boolean hasRestroom) {
         this.hasRestroom = hasRestroom;
     }
 

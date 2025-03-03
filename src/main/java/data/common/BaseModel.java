@@ -77,7 +77,9 @@ public abstract class BaseModel implements IAuditInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BaseModel that = (BaseModel) o;
-        return id != null && Objects.equals(id, that.id);
+       // return id != null && Objects.equals(id, that.id);
+        return id != null ? Objects.equals(id, that.id) : super.equals(o);
+
     }
 
     /**

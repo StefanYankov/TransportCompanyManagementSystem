@@ -4,6 +4,7 @@ import data.repositories.exceptions.RepositoryException;
 import services.data.dto.employees.DriverCreateDTO;
 import services.data.dto.employees.DriverUpdateDTO;
 import services.data.dto.employees.DriverViewDTO;
+import services.data.dto.transportservices.TransportServiceViewDTO;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -148,9 +149,9 @@ public interface IDriverService {
      * @param driverId The ID of the driver.
      * @param page     The page number (0-based).
      * @param size     The number of items per page.
-     * @return A list of transport service view DTOs (mix of TransportCargoServiceViewDTO and TransportPassengersServiceViewDTO).
+     * @return A list of {@link TransportServiceViewDTO} view DTOs (mix of TransportCargoServiceViewDTO and TransportPassengersServiceViewDTO).
      * @throws IllegalArgumentException if the driver ID is null.
      * @throws RepositoryException      if there’s a database error.
      */
-    public List<Object> getTransportServicesForDriver(Long driverId, int page, int size);
+    public List<TransportServiceViewDTO> getTransportServicesForDriver(Long driverId, int page, int size);
 }

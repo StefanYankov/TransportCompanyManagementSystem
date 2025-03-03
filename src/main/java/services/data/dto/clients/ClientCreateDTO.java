@@ -5,7 +5,12 @@ import data.common.annotations.ValidEmail;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class ClientCreateDTO {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class ClientCreateDTO implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @NotBlank(message = ModelValidation.CLIENT_NAME_NOT_BLANK)
     @Size(max = ModelValidation.CLIENT_NAME_MAX_NAME_LENGTH, message = ModelValidation.CLIENT_NAME_LENGTH_EXCEEDED)

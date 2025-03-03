@@ -4,7 +4,14 @@ import data.common.ModelValidation;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class QualificationCreateDTO {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class QualificationCreateDTO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @NotBlank(message = ModelValidation.QUALIFICATION_NAME_NOT_BLANK)
     @Size(max = ModelValidation.QUALIFICATION_NAME_MAX_NAME_LENGTH, message = ModelValidation.QUALIFICATION_NAME_LENGTH_EXCEEDED)
     private String name;

@@ -4,7 +4,13 @@ import data.common.ModelValidation;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.Length;
 
-public class TransportCompanyCreateDTO {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class TransportCompanyCreateDTO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @NotBlank(message = ModelValidation.NAME_IS_REQUIRED)
     @Length(min = ModelValidation.MIN_NAME_LENGTH, max = ModelValidation.MAX_NAME_LENGTH)

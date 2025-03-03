@@ -3,7 +3,13 @@ package services.data.dto.vehicles;
 import data.common.ModelValidation;
 import jakarta.validation.constraints.*;
 
-public abstract class VehicleCreateDTO {
+import java.io.Serial;
+import java.io.Serializable;
+
+public abstract class VehicleCreateDTO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @NotBlank(message = ModelValidation.REGISTRATION_PLATE_REQUIRED)
     @Size(max = ModelValidation.MAX_REGISTRATION_PLATE_LENGTH,  message = ModelValidation.REGISTRATION_PLATE_TOO_LONG)

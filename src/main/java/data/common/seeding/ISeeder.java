@@ -14,5 +14,4 @@ public interface ISeeder<T, TKey> {
      * The data will be read from a JSON file.
      */
     public void seed();
-
 }

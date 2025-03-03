@@ -52,5 +52,4 @@ public class Qualification extends BaseModel {
     public void setDrivers(Set<Driver> drivers) {
         this.drivers = drivers;
     }
-
 }

@@ -16,7 +16,6 @@ import services.data.mapping.mappers.DriverMapper;
 import services.services.contracts.IDispatcherService;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 

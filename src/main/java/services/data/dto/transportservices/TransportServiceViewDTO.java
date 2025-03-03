@@ -3,7 +3,14 @@ package services.data.dto.transportservices;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class TransportServiceViewDTO {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class TransportServiceViewDTO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     public Long id;
     public Long transportCompanyId;
     public LocalDate startingDate;

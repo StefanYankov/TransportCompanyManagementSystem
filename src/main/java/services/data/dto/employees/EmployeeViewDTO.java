@@ -1,8 +1,12 @@
 package services.data.dto.employees;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class EmployeeViewDTO {
+public class EmployeeViewDTO implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private Long id;
     private String firstName;
     private String familyName;

@@ -6,9 +6,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public abstract class EmployeeCreateDTO {
+public abstract class EmployeeCreateDTO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @NotBlank(message = ModelValidation.FIRST_NAME_IS_REQUIRED)
     @Size(min = ModelValidation.MIN_NAME_LENGTH, max = ModelValidation.MAX_NAME_LENGTH)
@@ -25,7 +30,8 @@ public abstract class EmployeeCreateDTO {
     @NotNull(message = ModelValidation.ID_REQUIRED)
     private Long transportCompanyId;
 
-    public EmployeeCreateDTO() {}
+    public EmployeeCreateDTO() {
+    }
 
     public EmployeeCreateDTO(String firstName, String familyName, BigDecimal salary, Long transportCompanyId) {
         this.firstName = firstName;

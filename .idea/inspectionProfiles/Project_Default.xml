@@ -2,6 +2,9 @@
   <profile version="1.0">
     <option name="myName" value="Project Default" />
     <inspection_tool class="CodeBlock2Expr" enabled="true" level="INFORMATION" enabled_by_default="true" />
+    <inspection_tool class="CommentedOutCode" enabled="true" level="INFORMATION" enabled_by_default="true" />
+    <inspection_tool class="ConstantValue" enabled="true" level="INFORMATION" enabled_by_default="true" />
+    <inspection_tool class="Convert2Diamond" enabled="true" level="INFORMATION" enabled_by_default="true" />
     <inspection_tool class="Convert2MethodRef" enabled="true" level="INFORMATION" enabled_by_default="true" />
     <inspection_tool class="DuplicatedCode" enabled="true" level="INFORMATION" enabled_by_default="true">
       <Languages>
@@ -16,8 +19,10 @@
       <option name="suggestEnumSwitches" value="false" />
     </inspection_tool>
     <inspection_tool class="LoggingSimilarMessage" enabled="true" level="INFORMATION" enabled_by_default="true" />
+    <inspection_tool class="NullArgumentToVariableArgMethod" enabled="true" level="INFORMATION" enabled_by_default="true" />
     <inspection_tool class="OptionalGetWithoutIsPresent" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="RedundantLengthCheck" enabled="true" level="INFORMATION" enabled_by_default="true" />
+    <inspection_tool class="SameParameterValue" enabled="true" level="INFORMATION" enabled_by_default="true" />
     <inspection_tool class="SpellCheckingInspection" enabled="true" level="INFORMATION" enabled_by_default="true">
       <option name="processCode" value="true" />
       <option name="processLiterals" value="true" />
@@ -30,6 +35,7 @@
     <inspection_tool class="UNCHECKED_WARNING" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="UnnecessaryModifier" enabled="true" level="INFORMATION" enabled_by_default="true" />
     <inspection_tool class="UnusedProperty" enabled="true" level="INFORMATION" enabled_by_default="true" />
+    <inspection_tool class="WrapperTypeMayBePrimitive" enabled="true" level="INFORMATION" enabled_by_default="true" />
     <inspection_tool class="unused" enabled="true" level="INFORMATION" enabled_by_default="true" checkParameterExcludingHierarchy="false">
       <option name="LOCAL_VARIABLE" value="true" />
       <option name="FIELD" value="true" />
