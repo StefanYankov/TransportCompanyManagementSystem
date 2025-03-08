@@ -10,6 +10,8 @@ import services.services.contracts.ITransportCompanyService;
 import services.services.contracts.ITransportPassengersServiceService;
 
 import java.io.FileWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Scanner;
 
@@ -17,6 +19,8 @@ public class SerializationController {
     private static final Logger logger = LoggerFactory.getLogger(SerializationController.class);
 
     private final ITransportCompanyService transportCompanyService;
+    private final ITransportPassengersServiceService transportPassengersServiceService;
+    private final ITransportCargoServiceService transportCargoServiceService;
     private final IServiceSerializer<ITransportCompanyService, TransportServiceViewDTO, TransportServiceCreateDTO> transportCompanySerializer;
     private final IServiceSerializer<ITransportPassengersServiceService, TransportPassengersServiceViewDTO, TransportPassengersServiceCreateDTO> passengerSerializer;
     private final IServiceSerializer<ITransportCargoServiceService, TransportCargoServiceViewDTO, TransportCargoServiceCreateDTO> cargoSerializer;
@@ -24,35 +28,47 @@ public class SerializationController {
     private final Scanner scanner;
 
     public SerializationController(ITransportCompanyService transportServiceService,
+                                   ITransportPassengersServiceService transportPassengersServiceService,
+                                   ITransportCargoServiceService transportCargoServiceService,
                                    IServiceSerializer<ITransportCompanyService, TransportServiceViewDTO, TransportServiceCreateDTO> transportCompanySerializer,
                                    IServiceSerializer<ITransportPassengersServiceService, TransportPassengersServiceViewDTO, TransportPassengersServiceCreateDTO> passengerSerializer,
                                    IServiceSerializer<ITransportCargoServiceService, TransportCargoServiceViewDTO, TransportCargoServiceCreateDTO> cargoSerializer,
                                    Validator validator,
                                    Scanner scanner) {
         this.transportCompanyService = transportServiceService;
+        this.transportPassengersServiceService = transportPassengersServiceService;
+        this.transportCargoServiceService = transportCargoServiceService;
         this.transportCompanySerializer = transportCompanySerializer;
         this.passengerSerializer = passengerSerializer;
         this.cargoSerializer = cargoSerializer;
         this.validator = validator;
         this.scanner = scanner;
+        logger.info("{} initialized with dependencies", this.getClass().getSimpleName());
+    }
+
+    private int getUserChoice() {
+        try {
+            String input = scanner.nextLine().trim();
+            int choice = Integer.parseInt(input);
+            logger.debug("Received valid menu choice: {}", choice);
+            return choice;
+        } catch (NumberFormatException e) {
+            logger.warn("Invalid menu input received: {}", e.getMessage());
+            return -1;
+        }
     }
 
     public void handleMenu() {
+        logger.info("Entering SerializationController menu");
         while (true) {
             displayMenu();
-            System.out.print("Enter your choice: ");
-            String input = scanner.nextLine().trim();
-            try {
-                int choice = Integer.parseInt(input);
-                if (choice == 0) {
-                    logger.info("Exiting Serialization menu");
-                    break;
-                }
-                processChoice(choice);
-            } catch (NumberFormatException e) {
-                logger.warn("Invalid input received: {}", input);
-                System.out.println("Please enter a valid number.");
+            int choice = getUserChoice();
+            logger.debug("User selected menu option: {}", choice);
+            if (choice == 0) {
+                logger.info("Exiting SerializationController menu");
+                break;
             }
+            processChoice(choice);
         }
     }
 
@@ -62,33 +78,42 @@ public class SerializationController {
         System.out.println("2. Import Transport Passenger Services");
         System.out.println("3. Import Transport Cargo Services");
         System.out.println("0. Back to Main Menu");
+        logger.debug("Displayed Serialization menu");
     }
 
     private void processChoice(int choice) {
-        switch (choice) {
-            case 1:
-                exportTransportServices();
-                break;
-            case 2:
-                importTransportPassengersServices();
-                break;
-            case 3:
-                importTransportCargoServices();
-                break;
-            default:
-                logger.warn("Invalid menu choice: {}", choice);
-                System.out.println("Invalid choice. Please try again.");
+        try {
+            switch (choice) {
+                case 1:
+                    logger.info("Processing export transport services request");
+                    exportTransportServices();
+                    break;
+                case 2:
+                    logger.info("Processing import transport passenger services request");
+                    importTransportPassengersServices();
+                    break;
+                case 3:
+                    logger.info("Processing import transport cargo services request");
+                    importTransportCargoServices();
+                    break;
+                default:
+                    logger.warn("Invalid choice received: {}", choice);
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } catch (Exception e) {
+            logger.error("Error processing choice {}: {}", choice, e.getMessage(), e);
+            System.out.println("An error occurred: " + e.getMessage());
         }
     }
 
-
-
     private void exportTransportServices() {
         Long companyId = getLongInput("Enter company ID to export transport services for: ");
+        logger.debug("Received company ID for export: {}", companyId);
 
         System.out.print("Enter file name to export to (e.g., transport_services_company1.json): ");
         String fileName = scanner.nextLine().trim();
         String filePath = fileName;
+        logger.debug("Received export file name: {}", fileName);
 
         try {
             logger.info("Fetching transport services for company ID: {}", companyId);
@@ -117,37 +142,69 @@ public class SerializationController {
     }
 
     private void importTransportPassengersServices() {
-//        System.out.print("Enter file name to import from (e.g., transport_services_company1.json): ");
-//        String fileName = scanner.nextLine().trim();
-//        String filePath = fileName;
-//
-//        try {
-//            logger.info("Reading file: {}", filePath);
-//            String json = new String(Files.readAllBytes(Paths.get(filePath)));
-//
-//            logger.info("Deserializing transport services from JSON");
-//            List<TransportPassengersServiceCreateDTO> dtos = passengerSerializer.deserializeListFromJson(json);
-//            if (dtos.isEmpty()) {
-//                logger.info("No transport services found in file: {}", filePath);
-//                System.out.println("No transport services found in the file.");
-//                return;
-//            }
-//
-//            logger.info("Importing {} transport services", dtos.size());
-//            for (TransportPassengersServiceCreateDTO dto : dtos) {
-//                transportCompanyService.create(dto); // Assuming create method exists
-//                logger.debug("Imported service: {}", dto);
-//            }
-//
-//            System.out.println("Transport services imported successfully. " + dtos.size() + " service(s) added.");
-//            System.out.println("Imported Data:" + System.lineSeparator() + json);
-//            logger.info("Import completed successfully from {}", filePath);
-//        } catch (Exception e) {
-//            logger.error("Error importing transport services: {}", e.getMessage(), e);
-//            System.out.println("Error importing transport services: " + e.getMessage());
-//        }
+        System.out.print("Enter file name to import from (e.g., transport_passenger_services1.json): ");
+        String fileName = scanner.nextLine().trim();
+        String filePath = fileName;
+        logger.debug("Received import file name for passenger services: {}", fileName);
+
+        try {
+            logger.info("Reading file: {}", filePath);
+            String json = new String(Files.readAllBytes(Paths.get(filePath)));
+
+            logger.info("Deserializing transport passenger services from JSON");
+            List<TransportPassengersServiceCreateDTO> dtos = passengerSerializer.deserializeListFromJson(json);
+            if (dtos.isEmpty()) {
+                logger.info("No transport passenger services found in file: {}", filePath);
+                System.out.println("No transport passenger services found in the file.");
+                return;
+            }
+
+            logger.info("Importing {} transport passenger services", dtos.size());
+            for (TransportPassengersServiceCreateDTO dto : dtos) {
+                transportPassengersServiceService.create(dto);
+                logger.debug("Imported passenger service: {}", dto);
+            }
+
+            System.out.println("Transport services imported successfully. " + dtos.size() + " service(s) added.");
+            System.out.println("Imported Data:" + System.lineSeparator() + json);
+            logger.info("Passenger services import completed successfully from {}", filePath);
+        } catch (Exception e) {
+            logger.error("Error importing transport passenger services: {}", e.getMessage(), e);
+            System.out.println("Error importing transport passenger services: " + e.getMessage());
+        }
     }
+
     private void importTransportCargoServices() {
+        System.out.print("Enter file name to import from (e.g., transport_cargo_services1.json): ");
+        String fileName = scanner.nextLine().trim();
+        String filePath = fileName;
+        logger.debug("Received import file name for cargo services: {}", fileName);
+
+        try {
+            logger.info("Reading file: {}", filePath);
+            String json = new String(Files.readAllBytes(Paths.get(filePath)));
+
+            logger.info("Deserializing transport cargo services from JSON");
+            List<TransportCargoServiceCreateDTO> dtos = cargoSerializer.deserializeListFromJson(json);
+            if (dtos.isEmpty()) {
+                logger.info("No transport cargo services found in file: {}", filePath);
+                System.out.println("No transport cargo services found in the file.");
+                return;
+            }
+
+            logger.info("Importing {} transport cargo services", dtos.size());
+            for (TransportCargoServiceCreateDTO dto : dtos) {
+                transportCargoServiceService.create(dto);
+                logger.debug("Imported cargo service: {}", dto);
+            }
+
+            System.out.println("Transport cargo services imported successfully. " + dtos.size() + " service(s) added.");
+            System.out.println("Imported Data:" + System.lineSeparator() + json);
+            logger.info("Cargo services import completed successfully from {}", filePath);
+        } catch (Exception e) {
+            logger.error("Error importing transport cargo services: {}", e.getMessage(), e);
+            System.out.println("Error importing transport cargo services: " + e.getMessage());
+        }
     }
 
     private Long getLongInput(String prompt) {
@@ -155,10 +212,12 @@ public class SerializationController {
             System.out.print(prompt);
             String input = scanner.nextLine().trim();
             try {
-                return Long.parseLong(input);
+                Long value = Long.parseLong(input);
+                logger.debug("Received valid Long input: {}", value);
+                return value;
             } catch (NumberFormatException e) {
                 logger.warn("Invalid number input: {}", input);
-                System.out.println("Please enter a valid number.");
+                System.out.println("Invalid input. Please enter a valid number.");
             }
         }
     }

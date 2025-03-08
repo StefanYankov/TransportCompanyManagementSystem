@@ -137,4 +137,22 @@ public class TransportServiceViewDTO implements Serializable {
     public void setVehicleId(Long vehicleId) {
         this.vehicleId = vehicleId;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TransportServiceViewDTO{");
+        sb.append("id=").append(id);
+        sb.append(", transportCompanyId=").append(transportCompanyId);
+        sb.append(", startingDate=").append(startingDate);
+        sb.append(", endingDate=").append(endingDate);
+        sb.append(", destinationId=").append(destinationId);
+        sb.append(", clientId=").append(clientId);
+        sb.append(", price=").append(price);
+        sb.append(", isDelivered=").append(isDelivered);
+        sb.append(", isPaid=").append(isPaid);
+        sb.append(", vehicleId=").append(vehicleId);
+        sb.append(", driverId=").append(driverId);
+        sb.append('}');
+        return sb.toString();
+    }
 }

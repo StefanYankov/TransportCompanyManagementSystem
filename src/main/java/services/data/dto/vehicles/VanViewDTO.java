@@ -23,4 +23,13 @@ public class VanViewDTO extends TransportPeopleVehicleViewDTO {
     public void setHasPassengerOverheadStorage(Boolean hasPassengerOverheadStorage) {
         this.hasPassengerOverheadStorage = hasPassengerOverheadStorage;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("VanViewDTO{");
+        sb.append("hasPassengerOverheadStorage=").append(hasPassengerOverheadStorage);
+        sb.append('}');
+        sb.append(super.toString());
+        return sb.toString();
+    }
 }

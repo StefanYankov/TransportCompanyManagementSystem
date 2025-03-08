@@ -30,8 +30,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.4")
     testImplementation("org.hibernate.orm:hibernate-hikaricp:6.6.8.Final")
-    testImplementation("org.mockito:mockito-core:5.15.2")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.15.2")
 }
 
 test {

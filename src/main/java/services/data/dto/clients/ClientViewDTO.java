@@ -54,4 +54,14 @@ public class ClientViewDTO implements Serializable {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    @Override
+    public String toString() {
+        return "ClientViewDTO{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", telephone='" + telephone + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
 }

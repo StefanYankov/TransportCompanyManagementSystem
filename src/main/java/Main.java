@@ -52,8 +52,10 @@ public class Main {
 
         // ## Initiate utility classes
 
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
+        Validator validator;
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            validator = factory.getValidator();
+        }
 
         // ## Initialize repositories
         IGenericRepository<Employee, Long> employeeRepository =

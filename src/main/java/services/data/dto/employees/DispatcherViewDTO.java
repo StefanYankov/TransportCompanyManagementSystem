@@ -1,6 +1,5 @@
 package services.data.dto.employees;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,12 +10,18 @@ public class DispatcherViewDTO extends EmployeeViewDTO {
     public DispatcherViewDTO() {
     }
 
-
     public Set<Long> getSupervisedDriverIds() {
         return supervisedDriverIds;
     }
 
     public void setSupervisedDriverIds(Set<Long> supervisedDriverIds) {
         this.supervisedDriverIds = supervisedDriverIds;
+    }
+
+    @Override
+    public String toString() {
+        return "DispatcherViewDTO{" +
+                "supervisedDriverIds=" + supervisedDriverIds +
+                "} " + super.toString();
     }
 }

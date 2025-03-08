@@ -36,4 +36,13 @@ public class DestinationViewDTO {
     public void setEndingLocation(String endingLocation) {
         this.endingLocation = endingLocation;
     }
+
+    @Override
+    public String toString() {
+        return "DestinationViewDTO{" +
+                "id=" + id +
+                ", startingLocation='" + startingLocation + '\'' +
+                ", endingLocation='" + endingLocation + '\'' +
+                '}';
+    }
 }

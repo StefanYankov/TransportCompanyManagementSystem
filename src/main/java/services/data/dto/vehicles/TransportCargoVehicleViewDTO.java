@@ -42,4 +42,15 @@ public abstract class TransportCargoVehicleViewDTO extends VehicleViewDTO {
     public void setCargoType(CargoType cargoType) {
         this.cargoType = cargoType;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("maxCargoCapacityKg=").append(maxCargoCapacityKg);
+        sb.append(", currentCargoCapacityKg=").append(currentCargoCapacityKg);
+        sb.append(", cargoType=").append(cargoType);
+        sb.append('}');
+        sb.append(super.toString());
+        return sb.toString();
+    }
 }

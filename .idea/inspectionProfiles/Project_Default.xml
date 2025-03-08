@@ -19,6 +19,7 @@
       <option name="suggestEnumSwitches" value="false" />
     </inspection_tool>
     <inspection_tool class="LoggingSimilarMessage" enabled="true" level="INFORMATION" enabled_by_default="true" />
+    <inspection_tool class="MarkdownIncorrectlyNumberedListItem" enabled="true" level="INFORMATION" enabled_by_default="true" />
     <inspection_tool class="NullArgumentToVariableArgMethod" enabled="true" level="INFORMATION" enabled_by_default="true" />
     <inspection_tool class="OptionalGetWithoutIsPresent" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="RedundantLengthCheck" enabled="true" level="INFORMATION" enabled_by_default="true" />
@@ -33,6 +34,10 @@
     </inspection_tool>
     <inspection_tool class="TrivialIf" enabled="true" level="INFORMATION" enabled_by_default="true" />
     <inspection_tool class="UNCHECKED_WARNING" enabled="false" level="WARNING" enabled_by_default="false" />
+    <inspection_tool class="UnnecessaryLocalVariable" enabled="true" level="INFORMATION" enabled_by_default="true">
+      <option name="m_ignoreImmediatelyReturnedVariables" value="false" />
+      <option name="m_ignoreAnnotatedVariables" value="false" />
+    </inspection_tool>
     <inspection_tool class="UnnecessaryModifier" enabled="true" level="INFORMATION" enabled_by_default="true" />
     <inspection_tool class="UnusedProperty" enabled="true" level="INFORMATION" enabled_by_default="true" />
     <inspection_tool class="WrapperTypeMayBePrimitive" enabled="true" level="INFORMATION" enabled_by_default="true" />

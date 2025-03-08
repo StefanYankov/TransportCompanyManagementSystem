@@ -31,4 +31,13 @@ public class BusViewDTO extends TransportPeopleVehicleViewDTO {
     public void setLuggageCapacity(BigDecimal luggageCapacity) {
         this.luggageCapacity = luggageCapacity;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("BusViewDTO{");
+        sb.append("hasRestroom=").append(hasRestroom);
+        sb.append(", luggageCapacity=").append(luggageCapacity);
+        sb.append(super.toString());
+        return sb.toString();
+    }
 }

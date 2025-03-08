@@ -2,6 +2,8 @@ package UI.engines;
 
 import UI.controllers.*;
 import jakarta.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import services.IO.IServiceSerializer;
 import services.IO.ServiceSerializer;
 import services.data.dto.transportservices.*;
@@ -10,7 +12,9 @@ import services.services.contracts.*;
 import java.util.Scanner;
 
 public class ConsoleEngine implements IEngine {
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleEngine.class);
     private static final Scanner scanner = new Scanner(System.in);
+
     private final Validator validator;
     private final ITransportCompanyService companyService;
     private final IClientService clientService;
@@ -49,12 +53,14 @@ public class ConsoleEngine implements IEngine {
         this.truckService = truckService;
         this.busService = busService;
         this.vanService = vanService;
+        logger.info("ConsoleEngine initialized with dependencies");
     }
 
 
     @Override
     public void start() {
         // ## Initiate UI
+        logger.info("Starting ConsoleEngine");
 
         // Initialize controllers
         TransportCompanyController companyController = new TransportCompanyController(companyService, validator, scanner);
@@ -79,13 +85,21 @@ public class ConsoleEngine implements IEngine {
         SerializationController serializationController =
                 new SerializationController(
                         companyService,
+                        passengerServiceService,
+                        cargoServiceService,
                         transportCompanySerializer,
-                        passengerSerializer,cargoSerializer,validator, scanner);
+                        passengerSerializer,cargoSerializer,
+                        validator,
+                        scanner);
+
+        logger.info("All controllers and serializers initialized");
 
         while (true) {
             displayMenu();
             int choice = getUserChoice();
+            logger.debug("User selected menu option: {}", choice);
             if (choice == 0) {
+                logger.info("Exiting ConsoleEngine");
                 break;
             }
             processChoice(choice, companyController, clientController, dispatcherController, driverController,
@@ -93,6 +107,7 @@ public class ConsoleEngine implements IEngine {
                     destinationController, truckController, busController, vanController, serializationController);
         }
         System.out.println("Exiting application...");
+        logger.info("ConsoleEngine shut down");
     }
 
     private static void displayMenu() {
@@ -111,12 +126,17 @@ public class ConsoleEngine implements IEngine {
         System.out.println("12. Manage Serialization");
         System.out.println("0. Exit");
         System.out.print("Enter your choice: ");
+        logger.debug("Displayed main menu");
     }
 
     private static int getUserChoice() {
         try {
-            return Integer.parseInt(scanner.nextLine().trim());
+            String input = scanner.nextLine().trim();
+            int choice = Integer.parseInt(input);
+            logger.debug("Received valid menu choice: {}", choice);
+            return choice;
         } catch (NumberFormatException e) {
+            logger.warn("Invalid menu input received: {}", e.getMessage());
             return -1;
         }
     }
@@ -129,45 +149,63 @@ public class ConsoleEngine implements IEngine {
                                       DestinationController destinationController, TruckController truckController,
                                       BusController busController, VanController vanController,
                                       SerializationController serializationController) {
-        switch (choice) {
-            case 1:
-                companyController.handleMenu();
-                break;
-            case 2:
-                clientController.handleMenu();
-                break;
-            case 3:
-                dispatcherController.handleMenu();
-                break;
-            case 4:
-                driverController.handleMenu();
-                break;
-            case 5:
-                qualificationController.handleMenu();
-                break;
-            case 6:
-                cargoServiceController.handleMenu();
-                break;
-            case 7:
-                passengerServiceController.handleMenu();
-                break;
-            case 8:
-                destinationController.handleMenu();
-                break;
-            case 9:
-                truckController.handleMenu();
-                break;
-            case 10:
-                busController.handleMenu();
-                break;
-            case 11:
-                vanController.handleMenu();
-                break;
-            case 12:
-                serializationController.handleMenu();
-                break;
-            default:
-                System.out.println("Invalid choice. Please try again.");
+        try {
+            switch (choice) {
+                case 1:
+                    logger.info("Processing transport companies management request");
+                    companyController.handleMenu();
+                    break;
+                case 2:
+                    logger.info("Processing clients management request");
+                    clientController.handleMenu();
+                    break;
+                case 3:
+                    logger.info("Processing dispatchers management request");
+                    dispatcherController.handleMenu();
+                    break;
+                case 4:
+                    logger.info("Processing drivers management request");
+                    driverController.handleMenu();
+                    break;
+                case 5:
+                    logger.info("Processing qualifications management request");
+                    qualificationController.handleMenu();
+                    break;
+                case 6:
+                    logger.info("Processing cargo services management request");
+                    cargoServiceController.handleMenu();
+                    break;
+                case 7:
+                    logger.info("Processing passenger services management request");
+                    passengerServiceController.handleMenu();
+                    break;
+                case 8:
+                    logger.info("Processing destinations management request");
+                    destinationController.handleMenu();
+                    break;
+                case 9:
+                    logger.info("Processing trucks management request");
+                    truckController.handleMenu();
+                    break;
+                case 10:
+                    logger.info("Processing buses management request");
+                    busController.handleMenu();
+                    break;
+                case 11:
+                    logger.info("Processing vans management request");
+                    vanController.handleMenu();
+                    break;
+                case 12:
+                    logger.info("Processing serialization management request");
+                    serializationController.handleMenu();
+                    break;
+                default:
+                    logger.warn("Invalid choice received: {}", choice);
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } catch (Exception e) {
+            logger.error("Error processing choice {}: {}", choice, e.getMessage(), e);
+            System.out.println("An error occurred: " + e.getMessage());
         }
     }
 }

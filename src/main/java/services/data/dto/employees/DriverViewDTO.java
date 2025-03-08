@@ -27,4 +27,12 @@ public class DriverViewDTO extends EmployeeViewDTO {
     public void setQualificationIds(Set<Long> qualificationIds) {
         this.qualificationIds = qualificationIds;
     }
+
+    @Override
+    public String toString() {
+        return "DriverViewDTO{" +
+                "dispatcherId=" + dispatcherId +
+                ", qualificationIds=" + qualificationIds +
+                "} " + super.toString();
+    }
 }

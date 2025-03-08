@@ -22,4 +22,13 @@ public class TruckViewDTO extends TransportCargoVehicleViewDTO {
     public void setTruckType(TruckType truckType) {
         this.truckType = truckType;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TruckViewDTO{");
+        sb.append("truckType=").append(truckType);
+        sb.append('}');
+        sb.append(super.toString());
+        return sb.toString();
+    }
 }

@@ -32,4 +32,15 @@ public class EmployeeViewDTO implements Serializable {
 
     public Long getTransportCompanyId() { return transportCompanyId; }
     public void setTransportCompanyId(Long transportCompanyId) { this.transportCompanyId = transportCompanyId; }
+
+    @Override
+    public String toString() {
+        return "EmployeeViewDTO{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", familyName='" + familyName + '\'' +
+                ", salary=" + salary +
+                ", transportCompanyId=" + transportCompanyId +
+                '}';
+    }
 }
