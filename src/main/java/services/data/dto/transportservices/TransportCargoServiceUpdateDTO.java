@@ -1,14 +1,32 @@
 package services.data.dto.transportservices;
 
+import data.common.ModelValidation;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.math.BigDecimal;
 
 public class TransportCargoServiceUpdateDTO extends TransportServiceUpdateDTO {
 
-    // TODO: add validation
+    @NotNull(message = ModelValidation.DIMENSION_REQUIRED)
+    @DecimalMin(value = ModelValidation.MIN_CARGO_CAPACITY, message = ModelValidation.INVALID_ALLOWED_DIMENSIONS_MESSAGE)
     private BigDecimal weightInKilograms;
+
+    @NotNull(message = ModelValidation.DIMENSION_REQUIRED)
+    @Min(value = ModelValidation.MINIMUM_ALLOWED_DIMENSIONS, message = ModelValidation.INVALID_ALLOWED_DIMENSIONS_MESSAGE)
     private int lengthInCentimeters;
+
+    @NotNull(message = ModelValidation.DIMENSION_REQUIRED)
+    @Min(value = ModelValidation.MINIMUM_ALLOWED_DIMENSIONS, message = ModelValidation.INVALID_ALLOWED_DIMENSIONS_MESSAGE)
     private int widthInCentimeters;
+
+    @NotNull(message = ModelValidation.DIMENSION_REQUIRED)
+    @Min(value = ModelValidation.MINIMUM_ALLOWED_DIMENSIONS, message = ModelValidation.INVALID_ALLOWED_DIMENSIONS_MESSAGE)
     private int heightInCentimeters;
+
+    @Size(max = ModelValidation.DESCRIPTION_MAXIMUM_LENGTH, message = ModelValidation.DESCRIPTION_ABOVE_MAXIMUM_LENGTH)
     private String description;
 
     public TransportCargoServiceUpdateDTO() {

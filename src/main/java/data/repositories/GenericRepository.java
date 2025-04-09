@@ -77,7 +77,7 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
             throw new IllegalArgumentException("ID must not be null");
         }
         return Optional.ofNullable(executeInTransaction(session -> {
-            return session.get(entityClass, id); // Simple get within transaction
+            return session.get(entityClass, id);
         }, "getById"));
     }
 
@@ -112,7 +112,7 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
             CriteriaQuery<T> cq = cb.createQuery(entityClass);
             Root<T> root = cq.from(entityClass);
 
-            // Handle fetch relations
+            // Handles fetch relations
             if ((fetchRelations != null) && (fetchRelations.length > 0)) {
                 for (String relation : fetchRelations) {
                     root.fetch(relation, JoinType.LEFT);
@@ -202,7 +202,7 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
             Root<T> root = cq.from(entityClass);
             Join<T, ?> join = root.join(joinField, JoinType.LEFT);
 
-            // Eagerly fetch specified relations
+            // Eagerly fetches specified relations
             if (fetchRelations != null && fetchRelations.length > 0) {
                 for (String relation : fetchRelations) {
                     root.fetch(relation, JoinType.LEFT);

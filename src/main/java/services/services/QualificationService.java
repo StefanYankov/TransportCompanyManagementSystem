@@ -76,7 +76,7 @@ public class QualificationService implements IQualificationService {
         try {
             Qualification existing = qualificationRepo.getById(dto.getId())
                     .orElseThrow(() -> new RepositoryException("Qualification not found with ID: " + dto.getId()));
-            qualificationMapper.toEntity(dto, existing); // Use manual mapping
+            qualificationMapper.toEntity(dto, existing);
             QualificationViewDTO result = qualificationRepo.updateAndMap(existing, qualificationMapper::toViewDTO, null);
             logger.info("{} updated with ID: {}", Constants.QUALIFICATION, result.getId());
             return result;

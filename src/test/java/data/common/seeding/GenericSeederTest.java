@@ -117,7 +117,7 @@ public class GenericSeederTest {
     void seed_EmptyJsonFile_SkipsSeeding() {
         // Arrange
         GenericSeeder<Qualification, Long> seeder = new GenericSeeder<>(
-                qualificationRepo, "data/empty.json", Qualification.class, gson, null);
+                qualificationRepo, "seed/empty.json", Qualification.class, gson, null);
 
         // Act
         seeder.seed();
@@ -131,7 +131,7 @@ public class GenericSeederTest {
     void seed_JsonFileNotFound_ThrowsRuntimeException() {
         // Arrange
         GenericSeeder<TransportCompany, Long> seeder = new GenericSeeder<>(
-                companyRepo, "data/missing.json", TransportCompany.class, gson, null);
+                companyRepo, "seed/missing.json", TransportCompany.class, gson, null);
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> seeder.seed());

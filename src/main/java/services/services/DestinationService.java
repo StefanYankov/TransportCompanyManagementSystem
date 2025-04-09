@@ -76,7 +76,7 @@ public class DestinationService implements IDestinationService {
         try {
             Destination existing = destinationRepo.getById(dto.getId())
                     .orElseThrow(() -> new RepositoryException("Destination not found with ID: " + dto.getId()));
-            destinationMapper.toEntity(dto, existing); // Use manual mapping
+            destinationMapper.toEntity(dto, existing);
             DestinationViewDTO result = destinationRepo.updateAndMap(existing, destinationMapper::toViewDTO, null);
             logger.info("{} updated with ID: {}", Constants.DESTINATION, result.getId());
             return result;

@@ -18,7 +18,7 @@ public class DestinationMapper {
                 .setAmbiguityIgnored(true)
                 .setFieldMatchingEnabled(true)
                 .setFieldAccessLevel(AccessLevel.PRIVATE)
-                .setSkipNullEnabled(true); // Skip null values during mapping
+                .setSkipNullEnabled(true);
         configureMappings();
     }
 

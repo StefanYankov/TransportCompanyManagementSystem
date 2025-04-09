@@ -72,10 +72,10 @@ public class DriverService implements IDriverService {
         }
         logger.debug("Creating {} with DTO: {}", Constants.DRIVER, dto);
         try {
-            Driver driver = driverMapper.toEntity(dto); // Relationships resolved in mapper
+            Driver driver = driverMapper.toEntity(dto);
             Driver created = driverRepo.create(driver);
             logger.info("{} created with ID: {}", Constants.DRIVER, created.getId());
-            return driverMapper.toViewDTO(created); // No fetch needed here; ViewDTO uses IDs
+            return driverMapper.toViewDTO(created);
         } catch (RepositoryException e) {
             logger.error("Failed to create {}: {} {}, cause: {}", Constants.DRIVER, dto.getFirstName(), dto.getFamilyName(), e.getMessage(), e);
             throw e;

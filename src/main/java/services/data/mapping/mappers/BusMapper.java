@@ -42,7 +42,7 @@ public class BusMapper {
         if (dto == null) throw new IllegalArgumentException("BusUpdateDTO must not be null");
         if (dto.getRegistrationPlate() != null) existing.setRegistrationPlate(dto.getRegistrationPlate());
         if (dto.getMaxPassengerCapacity() != null) existing.setMaxPassengerCapacity(dto.getMaxPassengerCapacity());
-        if (dto.getHasRestroom() != null) existing.setHasRestroom(dto.getHasRestroom()); // Only set if provided
+        if (dto.getHasRestroom() != null) existing.setHasRestroom(dto.getHasRestroom());
         if (dto.getLuggageCapacity() != null) existing.setLuggageCapacity(dto.getLuggageCapacity());
         if (dto.getTransportCompanyId() != null) {
             TransportCompany company = companyRepo.getById(dto.getTransportCompanyId())

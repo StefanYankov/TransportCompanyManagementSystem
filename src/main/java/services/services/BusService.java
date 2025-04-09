@@ -23,9 +23,9 @@ public class BusService implements IBusService {
     private static final Logger logger = LoggerFactory.getLogger(BusService.class);
     private final IGenericRepository<Bus, Long> busRepo;
     private final IGenericRepository<TransportCompany, Long> companyRepo;
-    private final IGenericRepository<TransportPassengersService, Long> transportServiceRepo; // Specific type
+    private final IGenericRepository<TransportPassengersService, Long> transportServiceRepo;
     private final BusMapper busMapper;
-    private final TransportPassengersServiceMapper transportServiceMapper; // Specific mapper
+    private final TransportPassengersServiceMapper transportServiceMapper;
 
     public BusService(IGenericRepository<Bus, Long> busRepo,
                       IGenericRepository<TransportCompany, Long> companyRepo,

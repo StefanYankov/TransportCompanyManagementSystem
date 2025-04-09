@@ -65,7 +65,8 @@ public class TransportCargoServiceService implements ITransportCargoServiceServi
             TransportCargoService existing = cargoServiceRepo.getById(dto.getId())
                     .orElseThrow(() -> new RepositoryException("TransportCargoService not found with ID: " + dto.getId()));
             TransportCargoService updatedEntity = mapper.toEntity(dto);
-            updatedEntity.setVersion(existing.getVersion()); // Preserve version for optimistic locking
+            // Preserve version for optimistic locking
+            updatedEntity.setVersion(existing.getVersion());
             TransportCargoServiceViewDTO result = cargoServiceRepo.updateAndMap(updatedEntity, mapper::toViewDTO, null);
             logger.info("{} updated with ID: {}", Constants.TRANSPORT_CARGO_SERVICE, result.getId());
             return result;

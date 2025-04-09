@@ -15,7 +15,7 @@ public class TransportCargoServiceCreateDTO extends TransportServiceCreateDTO {
 
     @NotNull(message = ModelValidation.DIMENSION_REQUIRED)
     @Min(value = ModelValidation.MINIMUM_ALLOWED_DIMENSIONS, message = ModelValidation.INVALID_ALLOWED_DIMENSIONS_MESSAGE)
-    private Integer lengthInCentimeters; // Use Integer for nullability
+    private Integer lengthInCentimeters;
 
     @NotNull(message = ModelValidation.DIMENSION_REQUIRED)
     @Min(value = ModelValidation.MINIMUM_ALLOWED_DIMENSIONS, message = ModelValidation.INVALID_ALLOWED_DIMENSIONS_MESSAGE)
