@@ -17,6 +17,8 @@ serialization/deserialization, this system is a complete solution for transport 
 - [Logging](#logging)
 - [Contributing](#contributing)
 - [License](#license)
+- [Acknowledgments](#acknowledgments)
+- [Repository](#repository)
 
 ## Features
 
@@ -170,4 +172,15 @@ As this is a university course project contribuiting is generally not required.
 
 This project is licensed under the MIT License. See the [LICENSE](https://github.com/StefanYankov/TransportCompanyManagementSystem/blob/main/LICENSE) file for details.
 
+## Acknowledgments
 
+- This project was developed as part of the  [**CSCB525 Applied Programming in Java**](https://ecatalog.nbu.bg/default.asp?V_Year=2022&YSem=5&Spec_ID=&Mod_ID=285&PageShow=coursepresent&P_Menu=courses_part2&Fac_ID=3&M_PHD=0&P_ID=2206&TabIndex=1&K_ID=44851&K_TypeID=10&l=1) course at the [**New Bulgarian University**](https://www.nbu.bg/en).
+- Special thanks to the course instructor for creating the project requirements.
+
+---
+
+## Repository
+
+GitHub Repository: [https://github.com/StefanYankov/TransportCompanyManagementSystem/](https://github.com/StefanYankov/TransportCompanyManagementSystem/)
+
+---
