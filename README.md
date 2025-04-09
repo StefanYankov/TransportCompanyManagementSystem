@@ -168,6 +168,6 @@ As this is a university course project contribuiting is generally not required.
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/StefanYankov/TransportCompanyManagementSystem/blob/main/LICENSE) file for details.
 
 
