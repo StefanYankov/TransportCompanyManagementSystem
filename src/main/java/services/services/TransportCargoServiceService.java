@@ -17,7 +17,6 @@ import services.data.dto.transportservices.TransportCargoServiceViewDTO;
 import services.data.mapping.mappers.TransportCargoServiceMapper;
 import services.services.contracts.ITransportCargoServiceService;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 

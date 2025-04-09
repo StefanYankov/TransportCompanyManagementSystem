@@ -161,7 +161,7 @@ public class GenericRepository<T, TKey> implements IGenericRepository<T, TKey> {
                         }
                         return cb.equal(path, entry.getValue());
                     })
-                    .collect(Collectors.toList());
+                    .toList();
             cq.where(predicates.toArray(new Predicate[0]));
 
             if (orderBy != null) {
